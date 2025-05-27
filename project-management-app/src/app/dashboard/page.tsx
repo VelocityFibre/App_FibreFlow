@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 const KPI_CONFIG = [
-  { label: "Projects", table: "projects" },
+  { label: "Projects", table: "new_projects", link: "/projects" },
   { label: "Contacts", table: "contacts" },
   { label: "Contractors", table: "contractors" },
   { label: "Stock Items", table: "stock_items" },
   { label: "Locations", table: "locations" },
+  { label: "Customers", table: "new_customers", link: "/customers" },
 ];
 
 export default function DashboardPage() {
@@ -50,12 +51,24 @@ export default function DashboardPage() {
       <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {kpis.map((kpi) => (
-          <div key={kpi.label} className="rounded-lg p-6 shadow border flex flex-col items-center bg-gray-900 border-gray-800 dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200">
-            <span className="text-lg text-gray-400 dark:text-gray-400 text-gray-700">{kpi.label}</span>
-            <span className="text-3xl font-bold mt-2 text-gray-100 dark:text-gray-100 text-gray-900">{kpi.count}</span>
-          </div>
-        ))}
+        {kpis.map((kpi, idx) => {
+  const config = KPI_CONFIG[idx];
+  const cardContent = (
+    <>
+      <span className="text-lg text-gray-400 dark:text-gray-400 text-gray-700">{kpi.label}</span>
+      <span className="text-3xl font-bold mt-2 text-gray-100 dark:text-gray-100 text-gray-900">{kpi.count}</span>
+    </>
+  );
+  return config.link ? (
+    <a key={kpi.label} href={config.link} className="rounded-lg p-6 shadow border flex flex-col items-center bg-gray-900 border-gray-800 dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
+      {cardContent}
+    </a>
+  ) : (
+    <div key={kpi.label} className="rounded-lg p-6 shadow border flex flex-col items-center bg-gray-900 border-gray-800 dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200">
+      {cardContent}
+    </div>
+  );
+})}
       </div>
 
       {/* Recent Activity */}

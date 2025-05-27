@@ -5,7 +5,14 @@ import { supabase } from "@/lib/supabaseClient";
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [editing, setEditing] = useState<string|null>(null);
-  const [newCustomer, setNewCustomer] = useState({ name: "", email: "" });
+  const [newCustomer, setNewCustomer] = useState({ 
+    name: "", 
+    email: "", 
+    address_line1: "", 
+    address_line2: "", 
+    city: "", 
+    postal_code: "" 
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +37,14 @@ export default function CustomersPage() {
   async function handleAdd() {
     if (!newCustomer.name) return;
     await supabase.from("new_customers").insert([newCustomer]);
-    setNewCustomer({ name: "", email: "" });
+    setNewCustomer({ 
+      name: "", 
+      email: "", 
+      address_line1: "", 
+      address_line2: "", 
+      city: "", 
+      postal_code: "" 
+    });
     fetchCustomers();
   }
 
@@ -41,25 +55,67 @@ export default function CustomersPage() {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-4">Customers</h2>
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Customer Name"
-          className="border rounded px-3 py-2 mr-2"
-          value={newCustomer.name}
-          onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          className="border rounded px-3 py-2 mr-2"
-          value={newCustomer.email}
-          onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })}
-        />
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={handleAdd}
-        >Add Customer</button>
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <input
+            type="text"
+            placeholder="Customer Name *"
+            className="border rounded px-3 py-2 w-full"
+            value={newCustomer.name}
+            onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
+          />
+        </div>
+        <div>
+          <input
+            type="email"
+            placeholder="Email"
+            className="border rounded px-3 py-2 w-full"
+            value={newCustomer.email}
+            onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })}
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Address Line 1"
+            className="border rounded px-3 py-2 w-full"
+            value={newCustomer.address_line1}
+            onChange={e => setNewCustomer({ ...newCustomer, address_line1: e.target.value })}
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Address Line 2"
+            className="border rounded px-3 py-2 w-full"
+            value={newCustomer.address_line2}
+            onChange={e => setNewCustomer({ ...newCustomer, address_line2: e.target.value })}
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="City"
+            className="border rounded px-3 py-2 w-full"
+            value={newCustomer.city}
+            onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })}
+          />
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Postal Code"
+            className="border rounded px-3 py-2 w-full"
+            value={newCustomer.postal_code}
+            onChange={e => setNewCustomer({ ...newCustomer, postal_code: e.target.value })}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+            onClick={handleAdd}
+          >Add Customer</button>
+        </div>
       </div>
       {loading ? (
         <p>Loading...</p>
@@ -69,6 +125,8 @@ export default function CustomersPage() {
             <tr>
               <th className="py-2 px-4 border-b">Name</th>
               <th className="py-2 px-4 border-b">Email</th>
+              <th className="py-2 px-4 border-b">Address</th>
+              <th className="py-2 px-4 border-b">Projects</th>
               <th className="py-2 px-4 border-b">Actions</th>
             </tr>
           </thead>
@@ -98,6 +156,60 @@ export default function CustomersPage() {
                   ) : (
                     customer.email
                   )}
+                </td>
+                <td className="py-2 px-4 border-b">
+                  {editing === customer.id ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        placeholder="Address Line 1"
+                        value={customer.address_line1 || ''}
+                        onChange={e => handleEditField(customer.id, "address_line1", e.target.value)}
+                        className="border rounded px-2 py-1 w-full"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Address Line 2"
+                        value={customer.address_line2 || ''}
+                        onChange={e => handleEditField(customer.id, "address_line2", e.target.value)}
+                        className="border rounded px-2 py-1 w-full"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="City"
+                          value={customer.city || ''}
+                          onChange={e => handleEditField(customer.id, "city", e.target.value)}
+                          className="border rounded px-2 py-1 w-full"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Postal Code"
+                          value={customer.postal_code || ''}
+                          onChange={e => handleEditField(customer.id, "postal_code", e.target.value)}
+                          className="border rounded px-2 py-1 w-full"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      {customer.address_line1 && <div>{customer.address_line1}</div>}
+                      {customer.address_line2 && <div>{customer.address_line2}</div>}
+                      {(customer.city || customer.postal_code) && (
+                        <div>
+                          {customer.city}{customer.city && customer.postal_code && ', '}{customer.postal_code}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </td>
+                <td className="py-2 px-4 border-b">
+                  <a 
+                    href={`/projects?customer=${customer.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    View Projects
+                  </a>
                 </td>
                 <td className="py-2 px-4 border-b">
                   {editing === customer.id ? (
