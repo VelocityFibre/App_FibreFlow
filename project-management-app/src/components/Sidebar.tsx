@@ -1,29 +1,60 @@
+"use client";
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/customers', label: 'Customers' },
   { href: '/kanban', label: 'Kanban' },
   { href: '/gantt', label: 'Gantt' },
   { href: '/grid', label: 'Grid' },
   { href: '/materials', label: 'Materials' },
-  { href: '/auth', label: 'Auth' },
+  { href: '/auth', label: 'Settings' },
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+  
   return (
-    <aside className="w-64 h-screen bg-gray-900 text-white flex flex-col p-4">
-      <h1 className="text-2xl font-bold mb-8">FiberFlow</h1>
-      <nav className="flex flex-col gap-4">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="hover:bg-gray-800 px-3 py-2 rounded text-lg transition"
-          >
-            {item.label}
-          </Link>
-        ))}
+    <aside className="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+      <div className="p-6">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">FibreFlow</h1>
+      </div>
+      
+      <nav className="flex-1 px-4 pb-4">
+        <div className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive 
+                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' 
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}`}
+              >
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
+      
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">VF</span>
+            </div>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">Velocity Fibre</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }
