@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "next-themes";
 import Sidebar from "@/components/Sidebar";
 import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
@@ -22,27 +21,45 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Check if theme exists in localStorage
+              try {
+                const storedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                // Apply theme based on localStorage or system preference
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} antialiased min-h-screen flex`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="w-full h-full flex bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-            <Sidebar />
-            <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
-              <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-10">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">FibreFlow</span>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <ThemeToggle />
-                </div>
-              </header>
-              <div className="flex-1 overflow-auto bg-white dark:bg-gray-900">
-                <div className="max-w-7xl mx-auto px-6 py-8">
-                  {children}
-                </div>
+        <div className="w-full h-full flex bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+          <Sidebar />
+          <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
+            <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-10">
+              <div className="flex items-center">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">FibreFlow</span>
               </div>
-            </main>
-          </div>
-        </ThemeProvider>
+              <div className="flex items-center space-x-4">
+                <ThemeToggle />
+              </div>
+            </header>
+            <div className="flex-1 overflow-auto bg-white dark:bg-gray-900">
+              <div className="max-w-7xl mx-auto px-6 py-8">
+                {children}
+              </div>
+            </div>
+          </main>
+        </div>
       </body>
     </html>
   );
