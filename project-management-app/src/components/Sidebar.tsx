@@ -18,7 +18,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   
   return (
-    <aside className="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+    <aside className="w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col justify-between">
       <div className="p-6">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">FibreFlow</h1>
       </div>

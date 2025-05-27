@@ -90,7 +90,13 @@ export default function GridDataTable() {
         <button onClick={onExport} className="bg-blue-600 px-4 py-2 rounded text-white">Export CSV</button>
         <button onClick={onBulkDelete} className="bg-red-600 px-4 py-2 rounded text-white">Delete Selected</button>
       </div>
-      <div className="ag-theme-balham w-full h-[500px]">
+      <div className="mb-2 text-sm text-gray-700 dark:text-gray-200">
+        Tip: You can edit data inline by double-clicking any cell (except the ID column). Scroll horizontally to view more columns.
+      </div>
+      <div
+        className="ag-theme-balham"
+        style={{ width: "100%", minWidth: 1200, height: 700, overflowX: "auto" }}
+      >
         {loading ? (
           <div className="text-gray-400 flex items-center justify-center h-full">Loading data...</div>
         ) : (
@@ -99,7 +105,7 @@ export default function GridDataTable() {
             rowData={rowData}
             columnDefs={columnDefs}
             animateRows={true}
-            domLayout="autoHeight"
+            domLayout="normal"
             rowSelection="multiple"
             onCellValueChanged={onCellValueChanged}
           />

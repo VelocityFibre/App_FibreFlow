@@ -24,34 +24,50 @@ export default function ProjectsPage() {
   async function fetchData() {
     setLoading(true);
     
-    // Fetch customer if customerId is provided
-    if (customerId) {
-      const { data: customerData } = await supabase
-        .from("new_customers")
-        .select("*")
-        .eq("id", customerId)
-        .single();
-      
-      setCustomer(customerData);
-      
-      // Fetch projects for this customer
-      const { data: projectsData } = await supabase
-        .from("new_projects")
-        .select("*")
-        .eq("customer_id", customerId);
-      
-      setProjects(projectsData || []);
-    } else {
-      // Fetch all projects
-      const { data: projectsData } = await supabase
-        .from("new_projects")
-        .select("*, new_customers(name)")
-        .order("name");
-      
-      setProjects(projectsData || []);
+    try {
+      // Fetch customer if customerId is provided
+      if (customerId) {
+        const { data: customerData, error: customerError } = await supabase
+          .from("new_customers")
+          .select("*")
+          .eq("id", customerId)
+          .single();
+        
+        if (customerError) {
+          console.error("Error fetching customer:", customerError);
+        } else {
+          setCustomer(customerData);
+        }
+        
+        // Fetch projects for this customer
+        const { data: projectsData, error: projectsError } = await supabase
+          .from("new_projects")
+          .select("*")
+          .eq("customer_id", customerId);
+        
+        if (projectsError) {
+          console.error("Error fetching projects:", projectsError);
+        } else {
+          setProjects(projectsData || []);
+        }
+      } else {
+        // Fetch all projects
+        const { data: projectsData, error: projectsError } = await supabase
+          .from("new_projects")
+          .select("*, new_customers(name)")
+          .order("name");
+        
+        if (projectsError) {
+          console.error("Error fetching all projects:", projectsError);
+        } else {
+          setProjects(projectsData || []);
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected error in fetchData:", error);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   }
 
   async function handleAddProject() {

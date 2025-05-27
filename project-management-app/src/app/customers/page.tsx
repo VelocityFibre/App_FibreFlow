@@ -21,9 +21,20 @@ export default function CustomersPage() {
 
   async function fetchCustomers() {
     setLoading(true);
-    const { data, error } = await supabase.from("new_customers").select("*");
-    setCustomers(data || []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from("new_customers").select("*");
+      
+      if (error) {
+        console.error("Error fetching customers:", error);
+      } else {
+        console.log("Fetched customers:", data);
+        setCustomers(data || []);
+      }
+    } catch (error) {
+      console.error("Unexpected error in fetchCustomers:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSave(id: string) {
@@ -54,13 +65,13 @@ export default function CustomersPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Customers</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Customers</h2>
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <input
             type="text"
             placeholder="Customer Name *"
-            className="border rounded px-3 py-2 w-full"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={newCustomer.name}
             onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
           />
@@ -69,7 +80,7 @@ export default function CustomersPage() {
           <input
             type="email"
             placeholder="Email"
-            className="border rounded px-3 py-2 w-full"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={newCustomer.email}
             onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })}
           />
@@ -78,7 +89,7 @@ export default function CustomersPage() {
           <input
             type="text"
             placeholder="Address Line 1"
-            className="border rounded px-3 py-2 w-full"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={newCustomer.address_line1}
             onChange={e => setNewCustomer({ ...newCustomer, address_line1: e.target.value })}
           />
@@ -87,7 +98,7 @@ export default function CustomersPage() {
           <input
             type="text"
             placeholder="Address Line 2"
-            className="border rounded px-3 py-2 w-full"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={newCustomer.address_line2}
             onChange={e => setNewCustomer({ ...newCustomer, address_line2: e.target.value })}
           />
@@ -96,7 +107,7 @@ export default function CustomersPage() {
           <input
             type="text"
             placeholder="City"
-            className="border rounded px-3 py-2 w-full"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={newCustomer.city}
             onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })}
           />
@@ -105,35 +116,35 @@ export default function CustomersPage() {
           <input
             type="text"
             placeholder="Postal Code"
-            className="border rounded px-3 py-2 w-full"
+            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             value={newCustomer.postal_code}
             onChange={e => setNewCustomer({ ...newCustomer, postal_code: e.target.value })}
           />
         </div>
         <div className="md:col-span-2">
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+            className="bg-black dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded-md w-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
             onClick={handleAdd}
           >Add Customer</button>
         </div>
       </div>
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-gray-600 dark:text-gray-300">Loading customers...</p>
       ) : (
-        <table className="min-w-full bg-white border rounded">
-          <thead>
+        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="py-2 px-4 border-b">Name</th>
-              <th className="py-2 px-4 border-b">Email</th>
-              <th className="py-2 px-4 border-b">Address</th>
-              <th className="py-2 px-4 border-b">Projects</th>
-              <th className="py-2 px-4 border-b">Actions</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Name</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Email</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Address</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Projects</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
             {customers.map((customer) => (
-              <tr key={customer.id}>
-                <td className="py-2 px-4 border-b">
+              <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (
                     <input
                       type="text"
@@ -145,7 +156,7 @@ export default function CustomersPage() {
                     customer.name
                   )}
                 </td>
-                <td className="py-2 px-4 border-b">
+                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (
                     <input
                       type="email"
@@ -157,7 +168,7 @@ export default function CustomersPage() {
                     customer.email
                   )}
                 </td>
-                <td className="py-2 px-4 border-b">
+                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (
                     <div className="space-y-2">
                       <input
@@ -165,14 +176,14 @@ export default function CustomersPage() {
                         placeholder="Address Line 1"
                         value={customer.address_line1 || ''}
                         onChange={e => handleEditField(customer.id, "address_line1", e.target.value)}
-                        className="border rounded px-2 py-1 w-full"
+                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                       <input
                         type="text"
                         placeholder="Address Line 2"
                         value={customer.address_line2 || ''}
                         onChange={e => handleEditField(customer.id, "address_line2", e.target.value)}
-                        className="border rounded px-2 py-1 w-full"
+                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                       <div className="flex gap-2">
                         <input
@@ -180,14 +191,14 @@ export default function CustomersPage() {
                           placeholder="City"
                           value={customer.city || ''}
                           onChange={e => handleEditField(customer.id, "city", e.target.value)}
-                          className="border rounded px-2 py-1 w-full"
+                          className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         />
                         <input
                           type="text"
                           placeholder="Postal Code"
                           value={customer.postal_code || ''}
                           onChange={e => handleEditField(customer.id, "postal_code", e.target.value)}
-                          className="border rounded px-2 py-1 w-full"
+                          className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         />
                       </div>
                     </div>
@@ -203,22 +214,22 @@ export default function CustomersPage() {
                     </div>
                   )}
                 </td>
-                <td className="py-2 px-4 border-b">
+                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   <a 
                     href={`/projects?customer=${customer.id}`}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     View Projects
                   </a>
                 </td>
-                <td className="py-2 px-4 border-b">
+                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (
                     <>
-                      <button className="bg-green-600 text-white px-3 py-1 rounded mr-2" onClick={() => handleSave(customer.id)}>Save</button>
-                      <button className="bg-gray-400 text-white px-3 py-1 rounded" onClick={() => setEditing(null)}>Cancel</button>
+                      <button className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors mr-2" onClick={() => handleSave(customer.id)}>Save</button>
+                      <button className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors" onClick={() => setEditing(null)}>Cancel</button>
                     </>
                   ) : (
-                    <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={() => setEditing(customer.id)}>Edit</button>
+                    <button className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors" onClick={() => setEditing(customer.id)}>Edit</button>
                   )}
                 </td>
               </tr>

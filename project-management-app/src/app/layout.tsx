@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
+
 import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
 
@@ -22,7 +23,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script src="/theme.js" async />
+
+        
       </head>
       <body className={`${inter.variable} antialiased min-h-screen flex`}>
         <div className="w-full h-full flex bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">

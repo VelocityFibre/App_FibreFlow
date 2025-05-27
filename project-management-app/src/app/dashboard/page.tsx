@@ -6,7 +6,7 @@ const KPI_CONFIG = [
   { label: "Projects", table: "new_projects", link: "/projects" },
   { label: "Contacts", table: "contacts", link: "/contacts" },
   { label: "Contractors", table: "contractors", link: "/contractors" },
-  { label: "Stock Items", table: "stock_items", link: "/materials" },
+  { label: "Stock Items", table: "stock_items", link: "/stock_items" },
   { label: "Locations", table: "locations", link: "/locations" },
   { label: "Customers", table: "new_customers", link: "/customers" },
 ];
@@ -45,19 +45,32 @@ export default function DashboardPage() {
     }
     async function fetchRecentProjects() {
       const { data: projects } = await supabase
-        .from("projects")
+        .from("new_projects")
         .select("id, name, created_at")
         .order("created_at", { ascending: false })
         .limit(5);
       setRecentProjects(projects || []);
     }
     async function fetchRecentStockMovements() {
-      const { data: stockMovements } = await supabase
-        .from("stock_movements")
-        .select("id, created_at, type")
-        .order("created_at", { ascending: false })
-        .limit(5);
-      setRecentStockMovements(stockMovements || []);
+      try {
+        const { data: stockMovements } = await supabase
+          .from("stock_items")
+          .select("id, created_at, name")
+          .order("created_at", { ascending: false })
+          .limit(5);
+        
+        // Transform the data to match expected structure
+        const formattedData = stockMovements?.map(item => ({
+          id: item.id,
+          created_at: item.created_at,
+          type: item.name ? 'IN' : 'Unknown'
+        })) || [];
+        
+        setRecentStockMovements(formattedData);
+      } catch (error) {
+        console.error('Error fetching stock movements:', error);
+        setRecentStockMovements([]);
+      }
     }
     fetchKPIs();
     fetchRecentProjects();
@@ -71,14 +84,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Overview of your projects and activities</p>
         </div>
-        <div className="flex space-x-2">
-          <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            Export
-          </button>
-          <a href="/projects/new" className="px-4 py-2 bg-black dark:bg-white rounded-md text-sm font-medium text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors inline-block">
-            New Project
-          </a>
-        </div>
+
       </div>
 
       {/* KPI Cards */}
@@ -193,14 +199,14 @@ export default function DashboardPage() {
         <a href="/projects" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base font-medium text-gray-900 dark:text-white">Recent Projects</h3>
-            <a href="/projects" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">View all</a>
+            <span className="text-sm text-gray-500 dark:text-gray-400">View all</span>
           </div>
           {recentProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <p className="text-gray-500 dark:text-gray-400">No recent projects found</p>
-              <a href="/projects" className="mt-3 px-4 py-2 bg-black dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+              <span className="mt-3 px-4 py-2 bg-black dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-md transition-colors inline-block">
                 Create Project
-              </a>
+              </span>
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -210,24 +216,24 @@ export default function DashboardPage() {
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">{proj.name || `Project #${proj.id}`}</h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{proj.created_at?.slice(0, 10)}</p>
                   </div>
-                  <a href={`/projects/${proj.id}`} className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">View</a>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">View</span>
                 </div>
               ))}
             </div>
           )}
         </a>
 
-        <a href="/materials" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
+        <a href="/stock_items" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-medium text-gray-900 dark:text-white">Stock Movements</h3>
-            <a href="/materials" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">View all</a>
+            <h3 className="text-base font-medium text-gray-900 dark:text-white">Stock Items</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400">View all</span>
           </div>
           {recentStockMovements.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No recent stock movements</p>
-              <a href="/materials" className="mt-3 px-4 py-2 bg-black dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
-                Manage Inventory
-              </a>
+              <p className="text-gray-500 dark:text-gray-400">No stock items found</p>
+              <span className="mt-3 px-4 py-2 bg-black dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-md transition-colors inline-block">
+                Manage Stock Items
+              </span>
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-800">

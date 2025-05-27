@@ -29,14 +29,15 @@ export default function ThemeToggle() {
 
   return (
     <button
-      className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+      aria-label="Toggle theme"
+      className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
       onClick={toggleTheme}
-      aria-label="Toggle dark/light theme"
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (
         // Sun icon for dark mode (clicking switches to light)
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m0 13.5V21m9-9h-2.25M3 12H5.25m12.02 6.02l-1.591-1.591m-8.486 0l-1.591 1.591m12.02-12.02l-1.591 1.591m-8.486 0l-1.591-1.591" />
         </svg>
       ) : (
         // Moon icon for light mode (clicking switches to dark)
