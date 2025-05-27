@@ -4,10 +4,10 @@ import { supabase } from "@/lib/supabaseClient";
 
 const KPI_CONFIG = [
   { label: "Projects", table: "new_projects", link: "/projects" },
-  { label: "Contacts", table: "contacts" },
-  { label: "Contractors", table: "contractors" },
-  { label: "Stock Items", table: "stock_items" },
-  { label: "Locations", table: "locations" },
+  { label: "Contacts", table: "contacts", link: "/contacts" },
+  { label: "Contractors", table: "contractors", link: "/contractors" },
+  { label: "Stock Items", table: "stock_items", link: "/materials" },
+  { label: "Locations", table: "locations", link: "/locations" },
   { label: "Customers", table: "new_customers", link: "/customers" },
 ];
 
@@ -75,9 +75,9 @@ export default function DashboardPage() {
           <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             Export
           </button>
-          <button className="px-4 py-2 bg-black dark:bg-white rounded-md text-sm font-medium text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+          <a href="/projects/new" className="px-4 py-2 bg-black dark:bg-white rounded-md text-sm font-medium text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors inline-block">
             New Project
-          </button>
+          </a>
         </div>
       </div>
 
@@ -98,28 +98,22 @@ export default function DashboardPage() {
             </>
           );
           
-          return config.link ? (
+          // All cards are now clickable
+          return (
             <a 
               key={kpi.label} 
-              href={config.link} 
-              className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
+              href={config.link || `/${config.table}`} 
+              className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
             >
               {cardContent}
             </a>
-          ) : (
-            <div 
-              key={kpi.label} 
-              className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900"
-            >
-              {cardContent}
-            </div>
           );
         })}
       </div>
 
       {/* Analytics Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        <div className="lg:col-span-2 p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
+        <a href="/projects" className="lg:col-span-2 p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-base font-medium text-gray-900 dark:text-white">Project Progress</h3>
             <div className="flex space-x-2">
@@ -158,9 +152,9 @@ export default function DashboardPage() {
               <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Jul</span>
             </div>
           </div>
-        </div>
+        </a>
 
-        <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
+        <a href="/projects" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
           <h3 className="text-base font-medium text-gray-900 dark:text-white mb-6">Project Status</h3>
           <div className="space-y-6">
             <div>
@@ -191,12 +185,12 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
+        </a>
       </div>
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
+        <a href="/projects" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base font-medium text-gray-900 dark:text-white">Recent Projects</h3>
             <a href="/projects" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">View all</a>
@@ -221,9 +215,9 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
-        </div>
+        </a>
 
-        <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
+        <a href="/materials" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base font-medium text-gray-900 dark:text-white">Stock Movements</h3>
             <a href="/materials" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">View all</a>
@@ -250,7 +244,7 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
-        </div>
+        </a>
       </div>
     </div>
   );

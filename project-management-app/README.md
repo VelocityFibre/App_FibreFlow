@@ -33,12 +33,52 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
   - Edit cells and save changes directly to Supabase
   - Export table to CSV
   - Bulk delete selected rows
+- **Full CRUD Pages:**
+  - **Customers:** Manage customer records (add, edit, delete, list)
+  - **Contacts:** Manage contact details for customers/contractors
+  - **Contractors:** Manage contractor information and assignments
+  - **Locations:** Manage project and material locations
+  - **Materials:** Manage stock items, including add/edit/list
+- **Dark Mode Support:**
+  - All pages support dark mode for improved readability and accessibility
+- **Improved Error Handling & UI Consistency:**
+  - Enhanced error messages and consistent user experience across all pages
 
 ### Optional Advanced Features
 - Real-time collaboration
 - In-app notifications and activity feed
 - Import/export project data (CSV, PDF)
 - Integration with mapping APIs for site visualization
+
+---
+
+## Supabase Backend
+
+All backend/database operations are performed using [Supabase](https://supabase.com/). The app uses Supabase's RESTful API for all CRUD operations (create, read, update, delete) across all entities (projects, customers, materials, etc.).
+
+---
+
+## Branch Protection & Contribution Workflow
+
+- **Main branch is protected:** Direct pushes to `main` are not allowed.
+- **Pull requests required:** All changes must be made via a pull request from a feature or fix branch.
+- **Code review required:** At least one approval is required before merging.
+- **Status checks:** If enabled, at least one status check (such as CI or tests) must pass before merging. If you see an error like `Required status checks cannot be empty`, either select a status check or disable the rule (see Troubleshooting below).
+- **Linear history recommended:** All merges should be done via rebase or squash for a clean commit history.
+
+---
+
+## Troubleshooting: Status Checks
+
+If you see the error:
+
+```
+Required status checks cannot be empty. Please add at least one status check or disable the rule.
+```
+
+This means the branch protection rule "Require status checks to pass before merging" is enabled, but no status checks are configured. To resolve:
+- Add a status check (e.g., GitHub Actions workflow) and select it in the rule; **or**
+- Disable the "Require status checks" option in the branch protection settings.
 
 ---
 
