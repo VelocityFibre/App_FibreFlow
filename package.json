@@ -1,0 +1,16 @@
+{
+  "name": "velocity-fibre-supabase",
+  "version": "1.0.0",
+  "description": "Supabase database connection utilities for VelocityFibre",
+  "main": "db.js",
+  "scripts": {
+    "test": "node test-connection.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "airtable": "^0.12.2",
+    "axios": "^1.9.0",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3"
+  }
+}
