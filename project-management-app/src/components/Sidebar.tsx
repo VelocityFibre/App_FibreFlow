@@ -7,11 +7,16 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/projects', label: 'Projects' },
   { href: '/customers', label: 'Customers' },
+  { href: '/my-tasks', label: 'My Tasks' },
   { href: '/kanban', label: 'Kanban' },
   { href: '/gantt', label: 'Gantt' },
   { href: '/grid', label: 'Grid' },
   { href: '/materials', label: 'Materials' },
   { href: '/auth', label: 'Settings' },
+];
+
+const adminItems = [
+  { href: '/admin/audit-logs', label: 'Audit Logs' },
 ];
 
 export default function Sidebar() {
@@ -39,6 +44,27 @@ export default function Sidebar() {
               </Link>
             );
           })}
+        </div>
+        
+        {/* Admin Section */}
+        <div className="mt-8">
+          <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Admin</h3>
+          <div className="mt-2 space-y-1">
+            {adminItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${isActive 
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' 
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </nav>
       

@@ -62,6 +62,8 @@ export async function autoAssignFirstPhaseAndTasks({
   phaseAssigneeId = null,
   taskAssigneeId = null
 }: AutoAssignArgs): Promise<{ projectPhase: ProjectPhase; defaultTasks: Task[] }> {
+  console.log(`Auto-assigning first phase and tasks for project ${projectId}`);
+  console.log(`Phase assignee: ${phaseAssigneeId}, Task assignee: ${taskAssigneeId}`);
   // Verify that the project exists in the projects table
   const { data: projectData, error: projectError } = await supabase
     .from("projects")
@@ -103,6 +105,20 @@ export async function autoAssignFirstPhaseAndTasks({
     console.error("Error creating project phase:", projPhaseError);
     throw projPhaseError;
   }
+  
+  // Log the phase assignment to audit trail
+  await createAuditLog(
+    AuditAction.CREATE,
+    AuditResourceType.PROJECT_PHASE,
+    projPhase.id,
+    {
+      projectId,
+      phaseId: firstPhase.id,
+      assignedTo: phaseAssigneeId,
+      status: "not_started",
+      automated: true
+    }
+  );
 
   // Get default tasks for phase
   // Modify the query to match your actual database schema
@@ -121,16 +137,42 @@ export async function autoAssignFirstPhaseAndTasks({
 
   // Insert project_tasks
   if (defaultTasks && defaultTasks.length > 0) {
-    const tasksToInsert = defaultTasks.map((task: Task) => ({
+    // Sort tasks by ID to ensure they're processed in sequence
+    const sortedTasks = [...defaultTasks].sort((a, b) => a.id - b.id);
+    
+    // Mark the first task as 'in_progress' and the rest as 'not_started'
+    const tasksToInsert = sortedTasks.map((task: Task, index) => ({
       project_phase_id: projPhase.id,
       task_id: task.id,
-      status: "not_started",
+      status: index === 0 ? "in_progress" : "not_started", // First task is automatically started
       assigned_to: taskAssigneeId
     }));
-    const { error: projectTasksError } = await supabase
+    
+    const { data: insertedTasks, error: projectTasksError } = await supabase
       .from("project_tasks")
-      .insert(tasksToInsert);
+      .insert(tasksToInsert)
+      .select();
+      
     if (projectTasksError) throw projectTasksError;
+    
+    // Log each task assignment to audit trail
+    if (insertedTasks) {
+      for (const task of insertedTasks) {
+        await createAuditLog(
+          AuditAction.CREATE,
+          AuditResourceType.PROJECT_TASK,
+          task.id,
+          {
+            projectPhaseId: projPhase.id,
+            taskId: task.task_id,
+            assignedTo: task.assigned_to,
+            status: task.status,
+            automated: true,
+            isFirstTask: task.status === "in_progress"
+          }
+        );
+      }
+    }
   }
 
   return { projectPhase: projPhase, defaultTasks };
