@@ -45,9 +45,9 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 After starting the application for the first time:
 
-1. Visit the auto-setup page at [http://localhost:3000/auto-setup](http://localhost:3000/auto-setup) to initialize project phases and tasks.
-2. This will create the default project phases (Planning, Design, Implementation, Testing, Deployment) and associated tasks.
-3. You can then create projects that will automatically be assigned to the first phase.
+1. Visit the **Admin > Phases & Tasks** page to initialize project phases and tasks.
+2. Click the "Setup Default Phases & Tasks" button to create the default project phases (Planning, Design, Implementation, Testing, Deployment) and associated tasks.
+3. You can then create projects with an assigned project manager. The first phase and its tasks will be automatically assigned to the project manager.
 
 ## Core Features
 - Project Kanban board
@@ -64,6 +64,10 @@ After starting the application for the first time:
   - Date-based project planning and tracking
   - Phased project workflow with automatic phase assignment
   - Default tasks for each project phase
+  - Automatic task assignment to project managers
+  - Sequential task activation based on completion
+  - Task reassignment and completion tracking
+  - My Tasks page for staff to manage their assigned tasks
 - **Spreadsheet-style Data Grid:**
   - View, filter, and edit live data from any table (e.g., projects, customers, materials)
   - Switch tables instantly with the table selector
@@ -182,6 +186,8 @@ Role-based access is enforced via Supabase policies and (optionally) in-app logi
 | Project Filtering/Search         | Planned      |
 | AI Task Sequencing               | Planned      |
 | Project Steps/Workflow Tracking  | Implemented  |
+| Automatic Phase/Task Assignment  | Implemented  |
+| Task Management & Reassignment   | Implemented  |
 | Site Materials Management        | Planned      |
 | Responsive Dashboard             | Planned      |
 | Enhanced Project Management      | Implemented  |
@@ -192,7 +198,7 @@ Role-based access is enforced via Supabase policies and (optionally) in-app logi
 | Import/Export Data               | Optional     |
 | Mapping API Integration          | Optional     |
 
-See [`FiberFlow-Project-Plan.md`](../FiberFlow-Project-Plan.md) for the full feature and style specification.
+See [`plan.md`](../plan.md) for the full feature and style specification and detailed project roadmap with implementation status.
 
 ---
 

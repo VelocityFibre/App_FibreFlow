@@ -12,23 +12,25 @@ To create a robust, modular, and automation-ready app that streamlines project e
 - Each customer can have multiple projects. *(IMPLEMENTED)*
 - Each project is assigned a unique ID, location, and start date, and is linked to a customer. *(IMPLEMENTED)*
 
-## 2. Project Workflow & Task Management *(IN PROGRESS)*
+## 2. Project Workflow & Task Management *(IMPLEMENTED)*
 
-### a. Phased Workflow Structure *(IN PROGRESS)*
+### a. Phased Workflow Structure *(IMPLEMENTED)*
 
-- Projects progress through sequential phases (Planning, Kickoff, Civils, Build, Splicing, Testing, Handover, Maintenance).
+- Projects progress through sequential phases (Planning, Design, Implementation, Testing, Deployment).
 - Each phase unlocks only after all tasks in the previous phase are completed.
 - Tasks in future phases remain locked until the current phase is complete.
-- **Automatic Phase Initialization:** First phase and its tasks are automatically created when a project is created. *(IN PROGRESS)*
+- **Automatic Phase Initialization:** First phase and its tasks are automatically created when a project is created. *(IMPLEMENTED)*
+- **Admin Phase & Task Management:** Dedicated admin page for setting up and managing project phases and tasks. *(IMPLEMENTED)*
 
-### b. Task Assignment & Tracking *(NEXT PRIORITY)*
+### b. Task Assignment & Tracking *(IMPLEMENTED)*
 
-- Each task includes assignee, due date, status (not started/in-progress/complete), and completion tracking.
-- Visual progress tracker displays completed, in-progress, and outstanding tasks per phase.
-- All task actions are logged in the audit trail for accountability.
-- **Automatic Task Assignment:** Project manager can be assigned during project creation and will automatically receive the first task. *(NEXT PRIORITY)*
-- **Staff Assignment Dashboard:** Project managers can view all assigned tasks and delegate them to appropriate staff members. *(NEXT PRIORITY)*
-- **Sequential Task Progression:** When one task is completed, the next task in sequence is automatically activated and assigned. *(NEXT PRIORITY)*
+- Each task includes assignee, due date, status (not started/in-progress/complete), and completion tracking. *(IMPLEMENTED)*
+- Visual progress tracker displays completed, in-progress, and outstanding tasks per phase. *(IMPLEMENTED)*
+- All task actions are logged in the audit trail for accountability. *(IMPLEMENTED)*
+- **Automatic Task Assignment:** Project manager can be assigned during project creation and will automatically receive the first task. *(IMPLEMENTED)*
+- **My Tasks Dashboard:** Staff members can view all tasks assigned to them across projects. *(IMPLEMENTED)*
+- **Task Reassignment:** Users can reassign tasks to other staff members as needed. *(IMPLEMENTED)*
+- **Sequential Task Progression:** When one task is completed, the next task in sequence is automatically activated and assigned. *(IMPLEMENTED)*
 
 ### c. Task Notifications & Reporting
 

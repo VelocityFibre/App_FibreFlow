@@ -43,12 +43,19 @@ interface ProjectPhase {
   status: string;
   assigned_to?: string | null;
   phase?: Phase;
+  phases?: {
+    name: string;
+    description?: string;
+    order_no?: number;
+  };
   [key: string]: unknown;
 }
 
 interface Task {
   id: number;
   title: string;
+  description?: string;
+  phase_id?: string;
 }
 
 interface ProjectTask {
@@ -107,13 +114,42 @@ export default function ProjectDetailsPage() {
       // For each project phase, get its tasks
       const phaseTasksObj: { [phaseId: string]: ProjectTask[] } = {};
       for (const phase of (projectPhasesData as ProjectPhase[]) || []) {
-        const { data: tasksData, error: tasksError } = await supabase
+        // Get project tasks for this phase
+        const { data: projectTasksData, error: projectTasksError } = await supabase
           .from("project_tasks")
           .select("*")
           .eq("project_phase_id", phase.id);
-        if (!tasksError && tasksData) {
-          phaseTasksObj[phase.id] = tasksData as ProjectTask[];
+        
+        if (projectTasksError) {
+          console.error('Error fetching project tasks:', projectTasksError);
+          continue;
         }
+        
+        // For each project task, get the associated task details
+        const enhancedTasks = [];
+        for (const projectTask of projectTasksData) {
+          const { data: taskData, error: taskError } = await supabase
+            .from("tasks")
+            .select("*")
+            .eq("id", projectTask.task_id)
+            .single();
+          
+          if (taskError) {
+            console.error('Error fetching task details:', taskError);
+            enhancedTasks.push({
+              ...projectTask,
+              task: null
+            });
+          } else {
+            enhancedTasks.push({
+              ...projectTask,
+              task: taskData
+            });
+          }
+        }
+        
+        console.log('Enhanced tasks for phase', phase.id, ':', enhancedTasks);
+        phaseTasksObj[phase.id] = enhancedTasks as ProjectTask[];
       }
       setPhaseTasks(phaseTasksObj);
       // Get all tasks
@@ -220,7 +256,7 @@ export default function ProjectDetailsPage() {
               <select
                 value={selectedPhaseId}
                 onChange={e => setSelectedPhaseId(e.target.value)}
-                className="border px-2 py-1 rounded"
+                className="border px-2 py-1 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">Select Phase</option>
                 {phases.map((phase: Phase) => (
@@ -266,8 +302,8 @@ export default function ProjectDetailsPage() {
               <div key={projPhase.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <span className="font-semibold text-lg text-gray-900 dark:text-white">{projPhase.phase?.name || 'Unnamed Phase'}</span>
-                    <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{projPhase.status}</span>
+                    <span className="font-semibold text-lg text-gray-900 dark:text-white">{projPhase.phases?.name || projPhase.phase?.name || 'Unnamed Phase'}</span>
+                    <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Status: {projPhase.status}</span>
                   </div>
                 </div>
                 <div className="mb-2 text-gray-600 dark:text-gray-300">{projPhase.phase?.description}</div>
@@ -291,7 +327,7 @@ export default function ProjectDetailsPage() {
                     <select
                       value={selectedTaskId || ""}
                       onChange={e => setSelectedTaskId(Number(e.target.value))}
-                      className="border px-2 py-1 rounded"
+                      className="border px-2 py-1 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="">Select Task</option>
                       {allTasks.filter((t: Task) => !(phaseTasks[projPhase.id]||[]).some((pt: ProjectTask) => pt.task_id === t.id)).map((task: Task) => (
@@ -332,9 +368,16 @@ export default function ProjectDetailsPage() {
                   ) : (
                     <ul>
                       {(phaseTasks[projPhase.id] || []).map((pt: ProjectTask) => (
-                        <li key={pt.id} className="mb-1 flex items-center gap-2">
-                          <span className="text-gray-900 dark:text-white">{pt.task?.title || `Task #${pt.task_id}`}</span>
-                          <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{pt.status}</span>
+                        <li key={pt.id} className="mb-3 border-b pb-2 border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-gray-900 dark:text-white font-medium">
+                              {pt.task?.title || `Task #${pt.task_id}`}
+                            </span>
+                            <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{pt.status}</span>
+                          </div>
+                          {pt.task?.description && (
+                            <div className="text-sm text-gray-600 dark:text-gray-400 ml-1 mb-1">{pt.task.description}</div>
+                          )}
                           <TaskAssigneeDropdown
                             value={pt.assigned_to || null}
                             onChange={async (staffId) => {
