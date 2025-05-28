@@ -2,21 +2,52 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- [Node.js](https://nodejs.org/) (v18.17.0 or later)
+- [npm](https://www.npmjs.com/) (v9.6.7 or later)
+- [Git](https://git-scm.com/) (for cloning the repository)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/VelocityFibre/App_FibreFlow.git
+   cd App_FibreFlow/project-management-app
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env.local` file in the project root with your Supabase credentials:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+### Running the Development Server
+
+#### On Linux/macOS:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### On Windows:
+```cmd
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application will be available at [http://localhost:3000](http://localhost:3000) (or another port if 3000 is in use).
+
+### Initial Setup
+
+After starting the application for the first time:
+
+1. Visit the auto-setup page at [http://localhost:3000/auto-setup](http://localhost:3000/auto-setup) to initialize project phases and tasks.
+2. This will create the default project phases (Planning, Design, Implementation, Testing, Deployment) and associated tasks.
+3. You can then create projects that will automatically be assigned to the first phase.
 
 ## Core Features
 - Project Kanban board
@@ -27,6 +58,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 - Project steps & workflow tracking
 - Site materials management
 - Responsive dashboard
+- **Enhanced Project Management:**
+  - Projects with start dates and location assignments
+  - Location-based project organization
+  - Date-based project planning and tracking
+  - Phased project workflow with automatic phase assignment
+  - Default tasks for each project phase
 - **Spreadsheet-style Data Grid:**
   - View, filter, and edit live data from any table (e.g., projects, customers, materials)
   - Switch tables instantly with the table selector
@@ -43,6 +80,11 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
   - All pages support dark mode for improved readability and accessibility
 - **Improved Error Handling & UI Consistency:**
   - Enhanced error messages and consistent user experience across all pages
+- **Comprehensive Audit Trail System:**
+  - Track all data modifications (create, update, delete)
+  - Record user actions with timestamps and details
+  - Filterable audit log viewer for administrators
+  - Support for compliance and accountability requirements
 
 ### Optional Advanced Features
 - Real-time collaboration
@@ -139,9 +181,11 @@ Role-based access is enforced via Supabase policies and (optionally) in-app logi
 | User Roles & Auth                | Planned      |
 | Project Filtering/Search         | Planned      |
 | AI Task Sequencing               | Planned      |
-| Project Steps/Workflow Tracking  | Planned      |
+| Project Steps/Workflow Tracking  | Implemented  |
 | Site Materials Management        | Planned      |
 | Responsive Dashboard             | Planned      |
+| Enhanced Project Management      | Implemented  |
+| Comprehensive Audit Trail        | Implemented  |
 | Spreadsheet-style Data Grid      | Implemented  |
 | Real-time Collaboration          | Optional     |
 | Notifications/Activity Feed      | Optional     |
@@ -159,6 +203,27 @@ See [`FiberFlow-Project-Plan.md`](../FiberFlow-Project-Plan.md) for the full fea
 - Use the filter and sort controls in the grid header for advanced data exploration.
 - Export the current table to CSV with the "Export CSV" button.
 - Select multiple rows and use "Delete Selected" for bulk deletion.
+
+## Usage: Audit Trail
+- Go to the **Admin > Audit Logs** page from the sidebar.
+- View all system actions with details about who did what and when.
+- Filter logs by:
+  - Action type (create, update, delete)
+  - Resource type (customer, project, etc.)
+  - Date range
+- Click "View Details" to see the full information about each action.
+- Use for compliance reporting, troubleshooting, and accountability tracking.
+
+## Usage: Project Phases
+- When creating a new project, it will automatically be assigned to the first phase (Planning).
+- Each phase has default tasks that help track progress.
+- The project workflow follows these phases:
+  1. Planning - Initial project planning and requirements gathering
+  2. Design - Technical design and architecture
+  3. Implementation - Development and construction
+  4. Testing - Quality assurance and testing
+  5. Deployment - Final deployment and handover
+- Visit the auto-setup page at `/auto-setup` to initialize these phases and tasks.
 
 ---
 
