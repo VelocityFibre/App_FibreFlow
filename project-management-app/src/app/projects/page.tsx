@@ -6,6 +6,15 @@ import { supabase } from "@/lib/supabaseClient";
 import { createAuditLog, AuditAction, AuditResourceType } from "@/lib/auditLogger";
 import ProjectAssigneeDropdown from "@/components/ProjectAssigneeDropdown";
 import { autoAssignFirstPhaseAndTasks } from "@/lib/projectPhaseUtils";
+import { testSupabaseConnection, testProjectsTable } from "@/lib/supabaseTest";
+
+// Helper function to generate UUID v4
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 interface Project {
   id: string;
@@ -58,14 +67,10 @@ function ProjectsContent() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [phaseAssignee, setPhaseAssignee] = useState<string | null>(null);
   const [taskAssignee, setTaskAssignee] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<{success: boolean, message: string} | null>(null);
 
-  useEffect(() => {
-    fetchData();
-    fetchLocations();
-    fetchCustomers();
-  }, [customerId]);
-
-  async function fetchCustomers() {
+  // Define fetch functions with useCallback to prevent infinite loops
+  const fetchCustomers = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("new_customers")
@@ -79,9 +84,9 @@ function ProjectsContent() {
     } catch (error) {
       console.error("Unexpected error in fetchCustomers:", error);
     }
-  }
+  }, []);
 
-  async function fetchLocations() {
+  const fetchLocations = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("locations")
@@ -95,10 +100,11 @@ function ProjectsContent() {
     } catch (error) {
       console.error("Unexpected error in fetchLocations:", error);
     }
-  }
+  }, []);
 
-  async function fetchData() {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
+    console.log('Fetching data with Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     try {
       // Fetch customer if customerId is provided
@@ -117,7 +123,7 @@ function ProjectsContent() {
 
         // Fetch projects for this customer
         const { data: projectsData, error: projectsError } = await supabase
-          .from("new_projects")
+          .from("projects")
           .select("*")
           .eq("customer_id", customerId);
 
@@ -127,24 +133,81 @@ function ProjectsContent() {
           setProjects(projectsData || []);
         }
       } else {
-        // Fetch all projects
+        // Fetch all projects - with detailed error handling
+        console.log('Attempting to fetch all projects...');
         const { data: projectsData, error: projectsError } = await supabase
-          .from("new_projects")
-          .select("*, new_customers(name)")
-          .order("name");
+          .from("projects")
+          .select("*");
 
         if (projectsError) {
-          console.error("Error fetching all projects:", projectsError);
+          console.error("Error fetching all projects:", JSON.stringify(projectsError));
+          alert(`Error fetching projects: ${JSON.stringify(projectsError)}`);
         } else {
-          setProjects(projectsData || []);
+          console.log('Projects data received:', projectsData);
+          // Map the data to match the expected Project interface
+          const formattedProjects = (projectsData || []).map(project => ({
+            id: project.id,
+            name: project.project_name || 'Unnamed Project', // Use project_name as the name field
+            customer_id: project.customer_id,
+            created_at: project.created_at,
+            start_date: project.start_date,
+            location_id: project.location_id,
+            province: project.province || '',
+            region: project.region || '',
+            new_customers: project.new_customers
+          }));
+          setProjects(formattedProjects);
         }
       }
     } catch (error) {
       console.error("Unexpected error in fetchData:", error);
+      alert(`Unexpected error in fetchData: ${JSON.stringify(error)}`);
     } finally {
       setLoading(false);
     }
+  }, [customerId]);
+  
+  useEffect(() => {
+    // Test Supabase connection first
+    testConnection();
+    // Then fetch data
+    fetchData();
+    fetchLocations();
+    fetchCustomers();
+  }, [fetchData, fetchLocations, fetchCustomers]);
+  
+  async function testConnection() {
+    // Test general Supabase connection
+    const connectionTest = await testSupabaseConnection();
+    if (!connectionTest.success) {
+      setConnectionStatus({
+        success: false,
+        message: `Supabase connection failed: ${JSON.stringify(connectionTest.error)}`
+      });
+      return;
+    }
+    
+    // Test projects table specifically
+    const projectsTest = await testProjectsTable();
+    if (!projectsTest.success) {
+      setConnectionStatus({
+        success: false,
+        message: `Projects table test failed: ${JSON.stringify(projectsTest.error)}`
+      });
+      return;
+    }
+    
+    setConnectionStatus({
+      success: true,
+      message: 'Connection to Supabase and projects table successful'
+    });
   }
+
+  // This function is now defined with useCallback above
+
+  // This function is now defined with useCallback above
+
+  // This function is now defined with useCallback above
 
   async function handleAddProject() {
     if (!newProject.name) {
@@ -155,27 +218,60 @@ function ProjectsContent() {
     try {
       // Create a clean payload without the id field (should be auto-generated by the database)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...payload } = newProject;
+      const { id, ...projectData } = newProject;
 
       // Remove empty location_id to prevent UUID validation errors
-      if (!payload.location_id) {
-        delete payload.location_id;
+      if (!projectData.location_id) {
+        delete projectData.location_id;
       }
 
       // Remove empty customer_id if not set
-      if (!payload.customer_id) {
-        delete payload.customer_id;
+      if (!projectData.customer_id) {
+        delete projectData.customer_id;
       }
 
       // Remove empty start_date if not set
-      if (!payload.start_date) {
-        delete payload.start_date;
+      if (!projectData.start_date) {
+        delete projectData.start_date;
       }
 
-      console.log("Attempting to add project with clean payload:", payload);
+      console.log("Attempting to add project with clean payload:", projectData);
+      // Rename fields to match the projects table schema
+      // The projects table uses project_name instead of name
+      // Generate a UUID for the id field
+      const projectsPayload = {
+        id: uuidv4(), // Generate a UUID for the id field
+        project_name: projectData.name,
+        customer_id: projectData.customer_id,
+        province: projectData.province,
+        region: projectData.region,
+        start_date: projectData.start_date,
+        location_id: projectData.location_id,
+      };
+      
+      // Create a clean payload with proper typing
+      interface ProjectPayload {
+        id: string; // Required id field
+        project_name: string;
+        customer_id?: string;
+        province?: string;
+        region?: string;
+        start_date?: string;
+        location_id?: string;
+        [key: string]: string | undefined; // More specific index signature
+      }
+      
+      // Convert to properly typed object and clean up empty values
+      const cleanPayload: ProjectPayload = { ...projectsPayload };
+      Object.keys(cleanPayload).forEach(key => {
+        if (cleanPayload[key] === undefined || cleanPayload[key] === null || cleanPayload[key] === '') {
+          delete cleanPayload[key];
+        }
+      });
+      
       const { data, error } = await supabase
         .from("projects")
-        .insert([payload])
+        .insert([cleanPayload])
         .select();
 
       if (error) {
@@ -255,6 +351,13 @@ function ProjectsContent() {
       <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
         {customer ? `Projects for ${customer.name}` : "All Projects"}
       </h2>
+      
+      {/* Connection status message */}
+      {connectionStatus && (
+        <div className={`mb-4 p-3 rounded ${connectionStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {connectionStatus.message}
+        </div>
+      )}
 
       {customer && (
         <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800">
