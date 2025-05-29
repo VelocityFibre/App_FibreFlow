@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import { createAuditLog, AuditAction, AuditResourceType } from "./auditLogger";
 
 // --- PHASES (master list) --- //
@@ -89,13 +89,13 @@ export async function autoAssignFirstPhaseAndTasks({
   // Add a small delay to ensure the project is fully committed to the database
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  // Insert project_phase
+  // Insert project_phase with 'in_progress' status to automatically start the planning phase
   const { data: projPhase, error: projPhaseError } = await supabase
     .from("project_phases")
     .insert([{
       project_id: projectId,
       phase_id: firstPhase.id,
-      status: "not_started",
+      status: "in_progress", // Set to 'in_progress' so the project immediately enters the planning phase
       assigned_to: phaseAssigneeId
     }])
     .select()
@@ -141,12 +141,27 @@ export async function autoAssignFirstPhaseAndTasks({
     const sortedTasks = [...defaultTasks].sort((a, b) => a.id - b.id);
     
     // Mark the first task as 'in_progress' and the rest as 'not_started'
-    const tasksToInsert = sortedTasks.map((task: Task, index) => ({
-      project_phase_id: projPhase.id,
-      task_id: task.id,
-      status: index === 0 ? "in_progress" : "not_started", // First task is automatically started
-      assigned_to: taskAssigneeId
-    }));
+    // Only include assigned_to if it's a valid value to avoid foreign key constraint issues
+    const tasksToInsert = sortedTasks.map((task: Task, index) => {
+      // Create a task with the minimum required fields
+      const taskData: any = {
+        project_phase_id: projPhase.id,
+        task_id: task.id,
+        status: index === 0 ? "in_progress" : "not_started" // First task is automatically started
+      };
+      
+      // If we have a valid project manager ID, use it for the first task
+      // This ensures at least the first task has an assignee
+      if (index === 0 && phaseAssigneeId !== null && phaseAssigneeId !== undefined && phaseAssigneeId !== '') {
+        taskData.assigned_to = phaseAssigneeId;
+        console.log(`Assigning first task to phase assignee: ${phaseAssigneeId}`);
+      }
+      
+      return taskData;
+    });
+    
+    // Log the tasks we're about to insert for debugging
+    console.log('Tasks to insert:', tasksToInsert);
     
     const { data: insertedTasks, error: projectTasksError } = await supabase
       .from("project_tasks")

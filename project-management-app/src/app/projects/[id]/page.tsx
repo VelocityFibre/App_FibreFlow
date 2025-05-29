@@ -94,26 +94,45 @@ export default function ProjectDetailsPage() {
     await supabase.from("project_tasks").update(updatedData).eq("id", id);
   }
 
+  async function updatePhaseAssignee(id: string, assigneeId: string | null) {
+    if (!id) return;
+    await supabase.from("project_phases").update({ assigned_to: assigneeId }).eq("id", id);
+  }
+
+  async function updateTaskAssignee(id: number | string, assigneeId: string | null) {
+    if (!id) return;
+    // Convert id to string if it's a number to ensure compatibility
+    const taskId = typeof id === 'number' ? String(id) : id;
+    await supabase.from("project_tasks").update({ assigned_to: assigneeId }).eq("id", taskId);
+  }
+
   async function fetchPhasesAndTasks() {
     if (!id) return;
     try {
       // Get master phases
       const phasesData = await getPhases();
       setPhases(phasesData);
-      // Get project phases
+      
+      // Get project phases with more detailed logging
+      console.log(`Fetching phases for project ${id}`);
       const { data: projectPhasesData, error: projectPhasesError } = await supabase
         .from("project_phases")
         .select("*, phases(*)")
         .eq("project_id", id);
+      
       if (projectPhasesError) {
         console.error('Error fetching project phases:', projectPhasesError);
         setProjectPhases([]);
       } else {
+        console.log(`Found ${projectPhasesData?.length || 0} phases for project ${id}:`, projectPhasesData);
         setProjectPhases(projectPhasesData as ProjectPhase[]);
       }
-      // For each project phase, get its tasks
+      
+      // For each project phase, get its tasks with improved error handling
       const phaseTasksObj: { [phaseId: string]: ProjectTask[] } = {};
       for (const phase of (projectPhasesData as ProjectPhase[]) || []) {
+        console.log(`Fetching tasks for phase ${phase.id}`);
+        
         // Get project tasks for this phase
         const { data: projectTasksData, error: projectTasksError } = await supabase
           .from("project_tasks")
@@ -121,46 +140,103 @@ export default function ProjectDetailsPage() {
           .eq("project_phase_id", phase.id);
         
         if (projectTasksError) {
-          console.error('Error fetching project tasks:', projectTasksError);
+          console.error(`Error fetching project tasks for phase ${phase.id}:`, projectTasksError);
+          phaseTasksObj[phase.id] = []; // Initialize with empty array to avoid undefined errors
           continue;
         }
         
+        console.log(`Found ${projectTasksData?.length || 0} tasks for phase ${phase.id}:`, projectTasksData);
+        
         // For each project task, get the associated task details
         const enhancedTasks = [];
-        for (const projectTask of projectTasksData) {
-          const { data: taskData, error: taskError } = await supabase
-            .from("tasks")
-            .select("*")
-            .eq("id", projectTask.task_id)
-            .single();
+        for (const projectTask of projectTasksData || []) {
+          console.log(`Fetching details for task ID ${projectTask.task_id}`);
           
-          if (taskError) {
-            console.error('Error fetching task details:', taskError);
+          try {
+            // Log the task_id to debug
+            console.log('Task ID to fetch:', projectTask.task_id, typeof projectTask.task_id);
+            
+            // First try to get the task directly
+            const { data: taskData, error: taskError } = await supabase
+              .from("tasks")
+              .select("*")
+              .eq("id", projectTask.task_id);
+            
+            console.log('Task query result:', { taskData, taskError });
+            
+            if (taskError || !taskData || taskData.length === 0) {
+              // If that fails, try to fetch all tasks and find the matching one
+              console.log('First query failed, trying to fetch all tasks');
+              const { data: allTasksData, error: allTasksError } = await supabase
+                .from("tasks")
+                .select("*");
+              
+              console.log('All tasks query result:', { 
+                count: allTasksData?.length || 0, 
+                error: allTasksError,
+                sample: allTasksData?.slice(0, 3) || []
+              });
+              
+              if (allTasksError || !allTasksData || allTasksData.length === 0) {
+                console.error('Could not fetch any tasks:', allTasksError);
+                enhancedTasks.push({
+                  ...projectTask,
+                  task: { title: `Task ${projectTask.task_id}`, description: "Task details not available" }
+                });
+              } else {
+                // Find the task with matching ID
+                const matchingTask = allTasksData.find(t => String(t.id) === String(projectTask.task_id));
+                
+                if (matchingTask) {
+                  console.log('Found matching task:', matchingTask);
+                  enhancedTasks.push({
+                    ...projectTask,
+                    task: matchingTask
+                  });
+                } else {
+                  console.error(`Task ID ${projectTask.task_id} not found in ${allTasksData.length} tasks`);
+                  enhancedTasks.push({
+                    ...projectTask,
+                    task: { title: `Task ${projectTask.task_id}`, description: "Task not found in database" }
+                  });
+                }
+              }
+            } else {
+              console.log(`Found details for task ID ${projectTask.task_id}:`, taskData[0]);
+              enhancedTasks.push({
+                ...projectTask,
+                task: taskData[0]
+              });
+            }
+          } catch (error) {
+            console.error(`Exception when fetching task ID ${projectTask.task_id}:`, error);
             enhancedTasks.push({
               ...projectTask,
-              task: null
-            });
-          } else {
-            enhancedTasks.push({
-              ...projectTask,
-              task: taskData
+              task: { title: `Task ${projectTask.task_id}`, description: "Error fetching task details" }
             });
           }
         }
         
-        console.log('Enhanced tasks for phase', phase.id, ':', enhancedTasks);
+        console.log(`Enhanced tasks for phase ${phase.id}:`, enhancedTasks);
         phaseTasksObj[phase.id] = enhancedTasks as ProjectTask[];
       }
       setPhaseTasks(phaseTasksObj);
       // Get all tasks
-      const { data: allTasksData, error: allTasksError } = await supabase
-        .from("tasks")
-        .select("*");
-      if (allTasksError) {
-        console.error('Error fetching all tasks:', allTasksError);
+      try {
+        const { data: allTasksData, error: allTasksError } = await supabase
+          .from("tasks")
+          .select("*");
+        
+        if (allTasksError) {
+          console.error('Error fetching all tasks:', JSON.stringify(allTasksError));
+          setAllTasks([]);
+        } else {
+          console.log('Successfully fetched all tasks:', allTasksData?.length || 0);
+          setAllTasks(allTasksData || []);
+        }
+      } catch (taskError) {
+        console.error('Exception when fetching all tasks:', taskError);
         setAllTasks([]);
-      } else {
-        setAllTasks(allTasksData || []);
       }
     } catch (error: unknown) {
       console.error('Error in fetchPhasesAndTasks:', error);
@@ -220,183 +296,168 @@ export default function ProjectDetailsPage() {
           <div>
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer ID</h3>
             <p className="mt-1 text-gray-900 dark:text-white">{project.customer_id || 'Not assigned'}</p>
-              <p className="mt-1 text-gray-900 dark:text-white">{project.customer_id || 'Not assigned'}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</h3>
-              <p className="mt-1 text-gray-900 dark:text-white">{project.created_at?.slice(0,10) || 'Unknown'}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</h3>
-              <p className="mt-1 text-gray-900 dark:text-white">{project.start_date || 'Not set'}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Location</h3>
-              <p className="mt-1 text-gray-900 dark:text-white">
-                {location ? location.location_name : (project.location_id || 'Not assigned')}
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Province</h3>
-              <p className="mt-1 text-gray-900 dark:text-white">{project.province || 'Not specified'}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Region</h3>
-              <p className="mt-1 text-gray-900 dark:text-white">{project.region || 'Not specified'}</p>
-            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</h3>
+            <p className="mt-1 text-gray-900 dark:text-white">{project.created_at?.slice(0,10) || 'Unknown'}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</h3>
+            <p className="mt-1 text-gray-900 dark:text-white">{project.start_date || 'Not set'}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Location</h3>
+            <p className="mt-1 text-gray-900 dark:text-white">
+              {location ? location.location_name : (project.location_id || 'Not assigned')}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Province</h3>
+            <p className="mt-1 text-gray-900 dark:text-white">{project.province || 'Not specified'}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Region</h3>
+            <p className="mt-1 text-gray-900 dark:text-white">{project.region || 'Not specified'}</p>
           </div>
         </div>
-        {/* --- PHASED WORKFLOW SECTION --- */}
-        <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold mb-4">Project Workflow</h2>
-          {/* Add Phase to Project */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add Phase to Project</label>
-            <div className="flex gap-2">
-              <select
-                value={selectedPhaseId}
-                onChange={e => setSelectedPhaseId(e.target.value)}
-                className="border px-2 py-1 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">Select Phase</option>
-                {phases.map((phase: Phase) => (
-                  <option key={phase.id} value={phase.id}>{phase.name}</option>
-                ))}
-              </select>
-              <button
-                className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50"
-                disabled={!selectedPhaseId || phaseAddLoading}
-                onClick={async () => {
-                  setPhaseAddLoading(true);
-                  try {
-                    if (typeof id !== 'string' || typeof selectedPhaseId !== 'string' || !id || !selectedPhaseId) {
-                      alert('Invalid project or phase selection.');
-                      setPhaseAddLoading(false);
-                      return;
-                    }
-                    await addProjectPhase(id, selectedPhaseId);
-                    setSelectedPhaseId("");
-                    await fetchPhasesAndTasks();
-                  } catch (err: unknown) {
-                    console.error('Error adding project phase:', err);
-                    let errMsg = '';
-                    if (typeof err === 'object' && err && 'message' in err) {
-                      errMsg = (err as { message?: string }).message || '';
-                    } else {
-                      errMsg = JSON.stringify(err);
-                    }
-                    alert('Error adding phase: ' + errMsg);
-                  } finally {
-                    setPhaseAddLoading(false);
-                  }
-              }}
-            >Add Phase</button>
-          </div>
-        </div>
-        {/* List Project Phases */}
-        {projectPhases.length === 0 ? (
-          <div className="text-gray-500">No phases assigned to this project.</div>
-        ) : (
-          <div className="space-y-6">
-            {projectPhases.map((projPhase: ProjectPhase) => (
-              <div key={projPhase.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <span className="font-semibold text-lg text-gray-900 dark:text-white">{projPhase.phases?.name || projPhase.phase?.name || 'Unnamed Phase'}</span>
-                    <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Status: {projPhase.status}</span>
+      </div>
+      {/* --- PHASED WORKFLOW SECTION --- */}
+      <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold mb-4">Project Workflow</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          View and manage the current project phases and tasks below. You can reassign tasks to different team members if you have admin privileges.
+        </p>
+      </div>
+      {/* List Project Phases */}
+      {projectPhases.length === 0 ? (
+        <div className="text-gray-500">No phases assigned to this project.</div>
+      ) : (
+        <div className="space-y-6">
+          {projectPhases.map((projPhase: ProjectPhase) => (
+            <div key={projPhase.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="font-semibold text-lg text-gray-900 dark:text-white">{projPhase.phases?.name || projPhase.phase?.name || 'Unnamed Phase'}</span>
+                  <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Status: {projPhase.status}</span>
+                </div>
+              </div>
+              <div className="mb-2 text-gray-600 dark:text-gray-300">{projPhase.phase?.description}</div>
+              {/* Phase Assignee */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 w-28">Phase Assignee:</label>
+                  <div className="w-64">
+                    <PhaseAssigneeDropdown
+                      value={projPhase.assigned_to || null}
+                      onChange={async (staffId) => {
+                        // Ensure staffId is properly typed as string | null
+                        const typedStaffId = staffId === null ? null : String(staffId);
+                        await updateProjectPhase(projPhase.id, { assigned_to: typedStaffId });
+                        await fetchPhasesAndTasks();
+                      }}
+                      disabled={projPhase.status === 'completed'}
+                    />
                   </div>
+                  {projPhase.assigned_to && <span className="text-xs text-gray-700 dark:text-gray-300 ml-2">Assigned</span>}
                 </div>
-                <div className="mb-2 text-gray-600 dark:text-gray-300">{projPhase.phase?.description}</div>
-                {/* Phase Assignee */}
-                <div className="mb-2 flex items-center gap-2">
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Phase Assignee:</label>
-                  <PhaseAssigneeDropdown
-                    value={projPhase.assigned_to || null}
-                    onChange={async (staffId) => {
-                      await updateProjectPhase(projPhase.id, { assigned_to: staffId });
-                      await fetchPhasesAndTasks();
-                    }}
-                    disabled={projPhase.status === 'completed'}
-                  />
-                  {projPhase.assigned_to && <span className="text-xs text-gray-700 dark:text-gray-300">Assigned</span>}
-                </div>
-                {/* Add Task to Phase */}
-                <div className="mb-2">
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Assign Task to Phase</label>
-                  <div className="flex gap-2 items-center">
-                    <select
-                      value={selectedTaskId || ""}
-                      onChange={e => setSelectedTaskId(Number(e.target.value))}
-                      className="border px-2 py-1 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="">Select Task</option>
-                      {allTasks.filter((t: Task) => !(phaseTasks[projPhase.id]||[]).some((pt: ProjectTask) => pt.task_id === t.id)).map((task: Task) => (
-                        <option key={task.id} value={task.id}>{task.title}</option>
-                      ))}
-                    </select>
-                    <button
-                      className="bg-green-600 text-white px-2 py-1 rounded disabled:opacity-50"
-                      disabled={!selectedTaskId || taskAddLoading[projPhase.id]}
+              </div>
+              {/* Phase Status Information */}
+              <div className="mb-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Tasks and phases are managed by administrators. Contact your project manager to request changes to the project structure.
+                </p>
+              </div>
+              {/* List Tasks for this Phase */}
+              <div className="mb-4">
+                <h3 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tasks</h3>
+                {!phaseTasks[projPhase.id] || phaseTasks[projPhase.id].length === 0 ? (
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200">
+                    <p className="text-sm">No tasks found for this phase. Try creating a new project to automatically generate tasks.</p>
+                    <button 
                       onClick={async () => {
-                        if (!selectedTaskId) return;
-                        setTaskAddLoading((prev: { [phaseId: string]: boolean }) => ({ ...prev, [projPhase.id]: true }));
                         try {
-                          await addProjectTask(projPhase.id, selectedTaskId);
-                          setSelectedTaskId(null);
-                          await fetchPhasesAndTasks();
-                        } catch (err: unknown) {
-                          console.error('Error adding task:', err);
-                          let errMsg = '';
-                          if (err instanceof Error) {
-                            errMsg = err.message;
+                          // Manually create a default task for this phase
+                          const { data: defaultTask } = await supabase
+                            .from('tasks')
+                            .select('*')
+                            .limit(1)
+                            .single();
+                            
+                          if (defaultTask) {
+                            const { error } = await supabase
+                              .from('project_tasks')
+                              .insert([
+                                {
+                                  project_phase_id: projPhase.id,
+                                  task_id: defaultTask.id,
+                                  status: 'in_progress'
+                                }
+                              ]);
+                              
+                            if (error) {
+                              console.error('Error creating task:', error);
+                              alert('Failed to create task: ' + error.message);
+                            } else {
+                              alert('Task created successfully!');
+                              fetchPhasesAndTasks(); // Refresh the data
+                            }
                           } else {
-                            errMsg = JSON.stringify(err);
+                            alert('No default tasks found in the system.');
                           }
-                          alert('Error adding task: ' + errMsg);
-                        } finally {
-                          setTaskAddLoading((prev: { [phaseId: string]: boolean }) => ({ ...prev, [projPhase.id]: false }));
+                        } catch (err) {
+                          console.error('Error:', err);
+                          alert('An error occurred while creating the task.');
                         }
                       }}
-                    >Add Task</button>
+                      className="mt-2 bg-blue-600 text-white px-3 py-1 text-xs rounded hover:bg-blue-700"
+                    >
+                      Create Default Task
+                    </button>
                   </div>
-                </div>
-                {/* List Tasks for this Phase */}
-                <div className="mb-2">
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Tasks</label>
-                  {(phaseTasks[projPhase.id] || []).length === 0 ? (
-                    <div className="text-gray-400 text-xs">No tasks assigned to this phase.</div>
-                  ) : (
-                    <ul>
-                      {(phaseTasks[projPhase.id] || []).map((pt: ProjectTask) => (
-                        <li key={pt.id} className="mb-3 border-b pb-2 border-gray-100 dark:border-gray-700">
-                          <div className="flex items-center gap-2 mb-1">
+                ) : (
+                  <ul className="space-y-4">
+                    {(phaseTasks[projPhase.id] || []).map((pt: ProjectTask) => (
+                      <li key={pt.id} className="border rounded-md p-3 bg-white dark:bg-gray-800 shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
                             <span className="text-gray-900 dark:text-white font-medium">
-                              {pt.task?.title || `Task #${pt.task_id}`}
+                              {pt.task?.title || `Task ${pt.task_id}`}
                             </span>
                             <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{pt.status}</span>
                           </div>
-                          {pt.task?.description && (
-                            <div className="text-sm text-gray-600 dark:text-gray-400 ml-1 mb-1">{pt.task.description}</div>
-                          )}
-                          <TaskAssigneeDropdown
-                            value={pt.assigned_to || null}
-                            onChange={async (staffId) => {
-                              await updateProjectTaskWrapper(pt.id, { assigned_to: staffId });
-                              await fetchPhasesAndTasks();
-                            }}
-                            disabled={pt.status === 'completed'}
-                          />
-                          {pt.assigned_to && <span className="text-xs text-gray-700 dark:text-gray-300">Assigned</span>}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                        </div>
+                        
+                        {pt.task?.description ? (
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">{pt.task.description}</div>
+                        ) : (
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">No description available</div>
+                        )}
+                        
+                        <div className="flex items-center gap-2">
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 w-28">Task Assignee:</label>
+                          <div className="w-64">
+                            <TaskAssigneeDropdown
+                              value={pt.assigned_to || null}
+                              onChange={async (staffId) => {
+                                // Ensure staffId is properly typed as string | null
+                                const typedStaffId = staffId === null ? null : String(staffId);
+                                await updateProjectTaskWrapper(pt.id, { assigned_to: typedStaffId });
+                                await fetchPhasesAndTasks();
+                              }}
+                              disabled={pt.status === 'completed'}
+                            />
+                          </div>
+                          {pt.assigned_to && <span className="text-xs text-gray-700 dark:text-gray-300 ml-2">Assigned</span>}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="mt-8">
         <Link href="/projects" className="text-blue-600 hover:underline">Back to Projects</Link>
       </div>
