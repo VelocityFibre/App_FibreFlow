@@ -3,7 +3,6 @@ import {
   QueryKey, 
   UseQueryOptions 
 } from '@tanstack/react-query';
-import { FeatureFlag, isFeatureEnabled } from './feature-flags';
 
 // Create a client
 export const queryClient = new QueryClient({
@@ -17,9 +16,9 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Check if React Query should be used
+// React Query is now always enabled (graduated from feature flag)
 export function shouldUseReactQuery(): boolean {
-  return isFeatureEnabled(FeatureFlag.USE_REACT_QUERY);
+  return true;
 }
 
 // Type for conditional query options

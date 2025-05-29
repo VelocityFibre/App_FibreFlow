@@ -44,6 +44,13 @@ export class PerformanceTracker {
     return duration;
   }
 
+  // Reset all measurements
+  reset(): void {
+    this.measurements.clear();
+    this.startTimes.clear();
+    console.log('Performance metrics reset');
+  }
+
   // Get statistics for an operation
   getStats(operation: string): {
     average: number;

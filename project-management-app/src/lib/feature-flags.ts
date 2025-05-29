@@ -1,20 +1,17 @@
 // Define all available feature flags
+// Note: React Query and Optimized Queries are now always enabled (graduated from flags)
 export enum FeatureFlag {
-  USE_REACT_QUERY = 'useReactQuery',
-  OPTIMIZED_PROJECT_QUERIES = 'optimizedProjectQueries',
-  OPTIMIZED_TASK_QUERIES = 'optimizedTaskQueries',
   USE_ERROR_BOUNDARIES = 'useErrorBoundaries',
   PERFORMANCE_MONITORING = 'performanceMonitoring',
+  ANALYTICS_DASHBOARD = 'analyticsDashboard',
 }
 
 // Simple feature flags implementation that doesn't require context
 // All flags are disabled by default for safety
 const featureFlags: Record<FeatureFlag, boolean> = {
-  [FeatureFlag.USE_REACT_QUERY]: false,
-  [FeatureFlag.OPTIMIZED_PROJECT_QUERIES]: false,
-  [FeatureFlag.OPTIMIZED_TASK_QUERIES]: false,
   [FeatureFlag.USE_ERROR_BOUNDARIES]: false,
   [FeatureFlag.PERFORMANCE_MONITORING]: true,
+  [FeatureFlag.ANALYTICS_DASHBOARD]: false,
 };
 
 // Check if a feature flag is enabled

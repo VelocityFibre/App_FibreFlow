@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Inter } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -13,11 +14,6 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "FibreFlow | Enterprise Fibre Management",
-  description: "Professional fibre deployment and project management platform",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        
+        <title>FibreFlow | Enterprise Fibre Management</title>
+        <meta name="description" content="Professional fibre deployment and project management platform" />
       </head>
       <body className={`${inter.variable} antialiased min-h-screen flex`}>
         {/* Wrap the application with QueryClientProvider for React Query */}

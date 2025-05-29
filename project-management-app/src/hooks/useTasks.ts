@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
-import { shouldUseReactQuery } from '@/lib/react-query';
 import { measureAsync } from '@/lib/performance';
 
 // Define task type based on the current implementation
@@ -41,73 +38,18 @@ async function fetchTasks(projectId?: string): Promise<Task[]> {
   });
 }
 
-// Hook that works with or without React Query based on feature flag
+// Optimized hook always uses React Query (graduated from feature flag)
 export function useTasks(projectId?: string) {
-  // State for traditional approach
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  
-  // Check if we should use optimized queries
-  const useOptimizedQueries = isFeatureEnabled(FeatureFlag.OPTIMIZED_TASK_QUERIES);
-  
-  // Only use React Query if both flags are enabled
-  const useReactQueryForTasks = shouldUseReactQuery() && useOptimizedQueries;
-  
-  // React Query implementation
+  // Always use React Query with optimized queries
   const queryResult = useQuery({
     queryKey: ['tasks', { projectId }],
     queryFn: () => fetchTasks(projectId),
-    enabled: useReactQueryForTasks,
   });
   
-  // Traditional fetch implementation
-  useEffect(() => {
-    if (!useReactQueryForTasks) {
-      const fetchData = async () => {
-        setIsLoading(true);
-        try {
-          const data = await fetchTasks(projectId);
-          setTasks(data);
-          setError(null);
-        } catch (err) {
-          setError(err instanceof Error ? err : new Error('An unknown error occurred'));
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      
-      fetchData();
-    }
-  }, [projectId, useReactQueryForTasks]);
-  
-  // Return a unified interface regardless of which implementation is used
-  if (useReactQueryForTasks) {
-    return {
-      tasks: queryResult.data || [],
-      isLoading: queryResult.isLoading,
-      error: queryResult.error instanceof Error ? queryResult.error : null,
-      refetch: queryResult.refetch,
-    };
-  }
-  
   return {
-    tasks,
-    isLoading,
-    error,
-    refetch: async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchTasks(projectId);
-        setTasks(data);
-        setError(null);
-        return { data };
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('An unknown error occurred'));
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
+    tasks: queryResult.data || [],
+    isLoading: queryResult.isLoading,
+    error: queryResult.error instanceof Error ? queryResult.error : null,
+    refetch: queryResult.refetch,
   };
 }

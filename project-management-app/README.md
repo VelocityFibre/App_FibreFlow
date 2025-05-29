@@ -58,6 +58,12 @@ After starting the application for the first time:
 - Project steps & workflow tracking
 - Site materials management
 - Responsive dashboard
+- **PowerBI-like Analytics Dashboard:**
+  - Interactive data visualization with multiple chart types
+  - Project, task, location, and audit analytics
+  - Real-time performance monitoring
+  - Customizable filters and date ranges
+  - Feature flag controlled deployment
 - **Enhanced Project Management:**
   - Projects with start dates and location assignments
   - Location-based project organization
@@ -95,6 +101,7 @@ After starting the application for the first time:
   - Real-time performance monitoring and metrics collection
   - Automated benchmark testing for optimization validation
   - Browser DevTools integration for detailed performance analysis
+  - Analytics dashboard performance tracking
 
 ### Optional Advanced Features
 - Real-time collaboration
@@ -199,6 +206,7 @@ Role-based access is enforced via Supabase policies and (optionally) in-app logi
 | Enhanced Project Management      | Implemented  |
 | Comprehensive Audit Trail        | Implemented  |
 | Spreadsheet-style Data Grid      | Implemented  |
+| PowerBI-like Analytics Dashboard | Implemented  |
 | Performance Optimization System  | Implemented  |
 | Feature Flag Management          | Implemented  |
 | Real-time Collaboration          | Optional     |
@@ -242,6 +250,17 @@ See [`plan.md`](../plan.md) for the full feature and style specification and det
 ## Usage: Performance Optimization
 - Navigate to **Admin > Performance** to access the performance dashboard
 - **Real-time Monitoring:** View live performance metrics as you use the app
+
+## Usage: Analytics Dashboard
+- Navigate to **Analytics > Dashboard** to access the main analytics dashboard
+- Use the navigation at the top to switch between different analytics views:
+  - **Dashboard:** Overview of all key metrics
+  - **Projects:** Detailed analysis of project performance and distribution
+  - **Tasks:** Analysis of task completion rates and distribution
+  - **Locations:** Geographic analysis of projects and tasks
+  - **Audit Trail:** Analysis of system activity and user actions
+- Use the filter panel to customize the data view by date range, project, location, and more
+- Performance monitoring is available in the bottom right corner when enabled via feature flags
 - **Feature Flags:** Toggle optimizations on/off via **Admin > Feature Flags**
 - **Benchmark Testing:** Click "Run Benchmark" to compare optimized vs baseline performance
 - **DevTools Integration:** 
