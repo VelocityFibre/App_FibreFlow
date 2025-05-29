@@ -53,7 +53,8 @@ interface ProjectPhase {
 
 interface Task {
   id: number;
-  title: string;
+  name?: string;  // Changed from title to name to match database
+  title?: string; // Keep title for backward compatibility
   description?: string;
   phase_id?: string;
 }
@@ -81,17 +82,23 @@ export default function ProjectDetailsPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [selectedPhaseId, setSelectedPhaseId] = useState<string>("");
   const [selectedTaskId, setSelectedTaskId] = useState<number|null>(null);
+  const [staffMembers, setStaffMembers] = useState<{ [id: string]: string }>({});
 
   // Wrapper function to handle ProjectTask updates with correct typing
   async function updateProjectTaskWrapper(id: number, updates: { assigned_to?: string | number | null }) {
     const updatedData: { assigned_to?: string | null } = {};
     
-    // Convert assigned_to to string if it's a number
+    // Convert assigned_to to string since database expects TEXT
     if (updates.assigned_to !== undefined) {
       updatedData.assigned_to = updates.assigned_to === null ? null : String(updates.assigned_to);
     }
     
-    await supabase.from("project_tasks").update(updatedData).eq("id", id);
+    const { error } = await supabase.from("project_tasks").update(updatedData).eq("id", id);
+    
+    if (error) {
+      console.error('Error updating task assignee:', error);
+      alert('Failed to update task assignee: ' + error.message);
+    }
   }
 
   async function updatePhaseAssignee(id: string, assigneeId: string | null) {
@@ -99,11 +106,37 @@ export default function ProjectDetailsPage() {
     await supabase.from("project_phases").update({ assigned_to: assigneeId }).eq("id", id);
   }
 
-  async function updateTaskAssignee(id: number | string, assigneeId: string | null) {
+  async function updateTaskAssignee(id: number | string, assigneeId: string | number | null) {
     if (!id) return;
-    // Convert id to string if it's a number to ensure compatibility
-    const taskId = typeof id === 'number' ? String(id) : id;
-    await supabase.from("project_tasks").update({ assigned_to: assigneeId }).eq("id", taskId);
+    // Convert assigneeId to string since the database expects TEXT
+    const stringAssigneeId = assigneeId === null ? null : String(assigneeId);
+    
+    const { error } = await supabase.from("project_tasks").update({ assigned_to: stringAssigneeId }).eq("id", id);
+    
+    if (error) {
+      console.error('Error updating task assignee:', error);
+      alert('Failed to update task assignee: ' + error.message);
+    }
+  }
+
+  async function fetchStaffMembers() {
+    try {
+      const { data, error } = await supabase
+        .from('staff')
+        .select('id, name');
+      
+      if (error) {
+        console.error('Error fetching staff members:', error);
+      } else if (data) {
+        const staffMap: { [id: string]: string } = {};
+        data.forEach(staff => {
+          staffMap[staff.id] = staff.name;
+        });
+        setStaffMembers(staffMap);
+      }
+    } catch (error) {
+      console.error('Error in fetchStaffMembers:', error);
+    }
   }
 
   async function fetchPhasesAndTasks() {
@@ -181,7 +214,7 @@ export default function ProjectDetailsPage() {
                 console.error('Could not fetch any tasks:', allTasksError);
                 enhancedTasks.push({
                   ...projectTask,
-                  task: { title: `Task ${projectTask.task_id}`, description: "Task details not available" }
+                  task: { name: `Task ${projectTask.task_id}`, description: "Task details not available" }
                 });
               } else {
                 // Find the task with matching ID
@@ -189,6 +222,7 @@ export default function ProjectDetailsPage() {
                 
                 if (matchingTask) {
                   console.log('Found matching task:', matchingTask);
+                  console.log('Matching task fields:', Object.keys(matchingTask));
                   enhancedTasks.push({
                     ...projectTask,
                     task: matchingTask
@@ -197,12 +231,13 @@ export default function ProjectDetailsPage() {
                   console.error(`Task ID ${projectTask.task_id} not found in ${allTasksData.length} tasks`);
                   enhancedTasks.push({
                     ...projectTask,
-                    task: { title: `Task ${projectTask.task_id}`, description: "Task not found in database" }
+                    task: { name: `Task ${projectTask.task_id}`, description: "Task not found in database" }
                   });
                 }
               }
             } else {
               console.log(`Found details for task ID ${projectTask.task_id}:`, taskData[0]);
+              console.log('Task fields:', Object.keys(taskData[0]));
               enhancedTasks.push({
                 ...projectTask,
                 task: taskData[0]
@@ -212,7 +247,7 @@ export default function ProjectDetailsPage() {
             console.error(`Exception when fetching task ID ${projectTask.task_id}:`, error);
             enhancedTasks.push({
               ...projectTask,
-              task: { title: `Task ${projectTask.task_id}`, description: "Error fetching task details" }
+              task: { name: `Task ${projectTask.task_id}`, description: "Error fetching task details" }
             });
           }
         }
@@ -280,6 +315,7 @@ export default function ProjectDetailsPage() {
     if (id) {
       fetchProject();
       fetchPhasesAndTasks();
+      fetchStaffMembers();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -358,7 +394,11 @@ export default function ProjectDetailsPage() {
                       disabled={projPhase.status === 'completed'}
                     />
                   </div>
-                  {projPhase.assigned_to && <span className="text-xs text-gray-700 dark:text-gray-300 ml-2">Assigned</span>}
+                  {projPhase.assigned_to && projPhase.assigned_to !== 'NaN' && (
+                    <span className="text-xs text-gray-700 dark:text-gray-300 ml-2">
+                      Assigned to: {staffMembers[projPhase.assigned_to] || 'Unknown'}
+                    </span>
+                  )}
                 </div>
               </div>
               {/* Phase Status Information */}
@@ -421,7 +461,7 @@ export default function ProjectDetailsPage() {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-900 dark:text-white font-medium">
-                              {pt.task?.title || `Task ${pt.task_id}`}
+                              {pt.task?.name || pt.task?.title || `Task ${pt.task_id}`}
                             </span>
                             <span className="ml-2 text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">{pt.status}</span>
                           </div>
@@ -439,15 +479,18 @@ export default function ProjectDetailsPage() {
                             <TaskAssigneeDropdown
                               value={pt.assigned_to || null}
                               onChange={async (staffId) => {
-                                // Ensure staffId is properly typed as string | null
-                                const typedStaffId = staffId === null ? null : String(staffId);
-                                await updateProjectTaskWrapper(pt.id, { assigned_to: typedStaffId });
+                                // Pass staffId directly - updateProjectTaskWrapper will handle the conversion
+                                await updateProjectTaskWrapper(pt.id, { assigned_to: staffId });
                                 await fetchPhasesAndTasks();
                               }}
                               disabled={pt.status === 'completed'}
                             />
                           </div>
-                          {pt.assigned_to && <span className="text-xs text-gray-700 dark:text-gray-300 ml-2">Assigned</span>}
+                          {pt.assigned_to && (
+                            <span className="text-xs text-gray-700 dark:text-gray-300 ml-2">
+                              Assigned to: {staffMembers[pt.assigned_to] || pt.assigned_to}
+                            </span>
+                          )}
                         </div>
                       </li>
                     ))}
