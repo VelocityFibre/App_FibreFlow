@@ -4,15 +4,38 @@
 This document outlines our strategy for collaborative development on the FibreFlow project, focusing on modular architecture, API-driven development, and GitHub workflow best practices.
 
 ## Table of Contents
-1. [GitHub Collaboration Workflow](#1-github-collaboration-workflow)
-2. [API-Driven Modular Architecture](#2-api-driven-modular-architecture)
-3. [Feature Flags for Collaborative Development](#3-feature-flags-for-collaborative-development)
-4. [Monorepo Structure](#4-monorepo-structure)
-5. [GitHub Actions for CI/CD](#5-github-actions-for-cicd)
-6. [Database Change Management](#6-database-change-management)
-7. [Implementation Plan](#7-implementation-plan)
+1. [Quick Start for Developers](#1-quick-start-for-developers)
+2. [GitHub Collaboration Workflow](#2-github-collaboration-workflow)
+3. [API-Driven Modular Architecture](#3-api-driven-modular-architecture)
+4. [Feature Flags for Collaborative Development](#4-feature-flags-for-collaborative-development)
+5. [Monorepo Structure](#5-monorepo-structure)
+6. [GitHub Actions for CI/CD](#6-github-actions-for-cicd)
+7. [Database Change Management](#7-database-change-management)
+8. [Implementation Plan](#8-implementation-plan)
 
-## 1. GitHub Collaboration Workflow
+## 1. Quick Start for Developers
+
+### 📚 Essential Reading
+- **[DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)** - Complete guide for safe parallel development
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Handy reference card for daily development
+
+### 🏃‍♂️ Start Developing Now
+```bash
+# 1. Set up your branch
+git checkout -b feature/your-feature
+npm install
+
+# 2. Create .env.local with feature flags OFF
+cp .env.example .env.local
+
+# 3. Start coding safely using feature flags
+# See DEVELOPMENT_GUIDE.md for the safe coding pattern
+```
+
+### 🎯 Key Principle
+**Never replace working code - add your improved version alongside and use feature flags to switch between them.**
+
+## 2. GitHub Collaboration Workflow
 
 ### Branch Protection Rules
 - Set up branch protection for `main` branch
@@ -31,7 +54,7 @@ This document outlines our strategy for collaborative development on the FibreFl
 - Track work in progress
 - Assign tasks to team members
 
-## 2. API-Driven Modular Architecture
+## 3. API-Driven Modular Architecture
 
 ### Backend API Layer
 
@@ -94,7 +117,7 @@ export async function createProject(projectData) {
 }
 ```
 
-## 3. Feature Flags for Collaborative Development
+## 4. Feature Flags for Collaborative Development
 
 Implement feature flags to enable/disable features in development:
 
@@ -111,7 +134,7 @@ This allows you to:
 - Test new features in isolation
 - Gradually roll out changes
 
-## 4. Monorepo Structure
+## 5. Monorepo Structure
 
 Consider restructuring as a monorepo using npm workspaces:
 

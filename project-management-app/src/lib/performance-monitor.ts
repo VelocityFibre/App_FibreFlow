@@ -1,4 +1,4 @@
-import { FeatureFlag, useFeatureFlags } from './feature-flags';
+import { FeatureFlag, isFeatureEnabled } from './feature-flags';
 
 // Interface for performance metrics
 export interface PerformanceMetric {
@@ -6,22 +6,27 @@ export interface PerformanceMetric {
   startTime: number;
   endTime?: number;
   duration?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Class to handle performance monitoring
 class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
-  private enabled: boolean = false;
+  private _enabled: boolean = false;
 
   // Enable or disable the performance monitor
-  setEnabled(enabled: boolean) {
-    this.enabled = enabled;
+  setEnabled(enabled: boolean): void {
+    this._enabled = enabled;
+  }
+  
+  // Check if monitoring is enabled
+  get enabled(): boolean {
+    return this._enabled;
   }
 
   // Start timing a metric
-  startMetric(name: string, metadata?: Record<string, any>): string | null {
-    if (!this.enabled) return null;
+  startMetric(name: string, metadata?: Record<string, unknown>): string | null {
+    if (!this._enabled) return null;
     
     const id = `${name}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     this.metrics.push({
@@ -81,32 +86,33 @@ class PerformanceMonitor {
 // Create a singleton instance
 export const performanceMonitor = new PerformanceMonitor();
 
-// React hook for component performance monitoring
-export function usePerformanceMonitor() {
-  const { isEnabled } = useFeatureFlags();
-  const isMonitoringEnabled = isEnabled(FeatureFlag.PERFORMANCE_MONITORING);
-  
-  // Set the monitor's enabled state based on the feature flag
+// Function to initialize performance monitoring
+export function initializePerformanceMonitoring(): void {
+  const isMonitoringEnabled = isFeatureEnabled(FeatureFlag.PERFORMANCE_MONITORING);
   performanceMonitor.setEnabled(isMonitoringEnabled);
-  
-  return {
-    startMetric: (name: string, metadata?: Record<string, any>) => 
-      performanceMonitor.startMetric(name, metadata),
-    endMetric: (name: string) => 
-      performanceMonitor.endMetric(name),
-    getMetrics: () => 
-      performanceMonitor.getMetrics(),
-    clearMetrics: () => 
-      performanceMonitor.clearMetrics(),
-    getMetricsByName: (name: string) => 
-      performanceMonitor.getMetricsByName(name),
-    getAverageDuration: (name: string) => 
-      performanceMonitor.getAverageDuration(name),
-  };
 }
 
+// Initialize monitoring on module load
+initializePerformanceMonitoring();
+
+// Utility functions for performance monitoring
+export const performanceUtils = {
+  startMetric: (name: string, metadata?: Record<string, unknown>) => 
+    performanceMonitor.startMetric(name, metadata),
+  endMetric: (name: string) => 
+    performanceMonitor.endMetric(name),
+  getMetrics: () => 
+    performanceMonitor.getMetrics(),
+  clearMetrics: () => 
+    performanceMonitor.clearMetrics(),
+  getMetricsByName: (name: string) => 
+    performanceMonitor.getMetricsByName(name),
+  getAverageDuration: (name: string) => 
+    performanceMonitor.getAverageDuration(name),
+};
+
 // Higher-order function to measure function performance
-export function measurePerformance<T extends (...args: any[]) => any>(
+export function measurePerformance<T extends (...args: unknown[]) => unknown>(
   fn: T,
   metricName: string
 ): (...args: Parameters<T>) => ReturnType<T> {

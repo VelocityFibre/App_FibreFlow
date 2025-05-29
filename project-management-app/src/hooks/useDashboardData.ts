@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { FeatureFlag, useFeatureFlags } from '@/lib/feature-flags';
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
+import { shouldUseReactQuery } from '@/lib/react-query';
 
 // Types based on the current dashboard implementation
 export type KPI = {
@@ -251,48 +252,46 @@ export function useDashboardData() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
-  // Access feature flags
-  const { isEnabled } = useFeatureFlags();
-  const useReactQuery = isEnabled(FeatureFlag.USE_REACT_QUERY);
-  const useOptimizedQueries = isEnabled(FeatureFlag.OPTIMIZED_PROJECT_QUERIES);
+  // Check if we should use optimized queries
+  const useOptimizedQueries = isFeatureEnabled(FeatureFlag.OPTIMIZED_PROJECT_QUERIES);
   
   // Only use React Query if both flags are enabled
-  const shouldUseReactQuery = useReactQuery && useOptimizedQueries;
+  const useReactQueryForDashboard = shouldUseReactQuery() && useOptimizedQueries;
   
   // React Query implementations
   const kpisQuery = useQuery({
     queryKey: ['dashboard', 'kpis'],
     queryFn: fetchKPIs,
-    enabled: shouldUseReactQuery,
+    enabled: useReactQueryForDashboard,
   });
   
   const projectsQuery = useQuery({
     queryKey: ['dashboard', 'recentProjects'],
     queryFn: fetchRecentProjects,
-    enabled: shouldUseReactQuery,
+    enabled: useReactQueryForDashboard,
   });
   
   const stockMovementsQuery = useQuery({
     queryKey: ['dashboard', 'recentStockMovements'],
     queryFn: fetchRecentStockMovements,
-    enabled: shouldUseReactQuery,
+    enabled: useReactQueryForDashboard,
   });
   
   const staffMembersQuery = useQuery({
     queryKey: ['dashboard', 'staffMembers'],
     queryFn: fetchStaffMembers,
-    enabled: shouldUseReactQuery,
+    enabled: useReactQueryForDashboard,
   });
   
   const taskStatsQuery = useQuery({
     queryKey: ['dashboard', 'taskStats', staffMembersQuery.data],
     queryFn: () => fetchTaskStats(staffMembersQuery.data || {}),
-    enabled: shouldUseReactQuery && !!staffMembersQuery.data,
+    enabled: useReactQueryForDashboard && !!staffMembersQuery.data,
   });
   
   // Traditional fetch implementation
   useEffect(() => {
-    if (!shouldUseReactQuery) {
+    if (!useReactQueryForDashboard) {
       const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -323,10 +322,10 @@ export function useDashboardData() {
       
       fetchData();
     }
-  }, [shouldUseReactQuery]);
+  }, [useReactQueryForDashboard]);
   
   // Return a unified interface regardless of which implementation is used
-  if (shouldUseReactQuery) {
+  if (useReactQueryForDashboard) {
     const isQueryLoading = 
       kpisQuery.isLoading || 
       projectsQuery.isLoading || 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { FeatureFlag, useFeatureFlags } from '@/lib/feature-flags';
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
+import { shouldUseReactQuery } from '@/lib/react-query';
 
 // Define project type based on the current implementation
 export type Project = {
@@ -45,24 +46,22 @@ export function useProjects(limit?: number) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
-  // Access feature flags
-  const { isEnabled } = useFeatureFlags();
-  const useReactQuery = isEnabled(FeatureFlag.USE_REACT_QUERY);
-  const useOptimizedQueries = isEnabled(FeatureFlag.OPTIMIZED_PROJECT_QUERIES);
+  // Check if we should use optimized queries
+  const useOptimizedQueries = isFeatureEnabled(FeatureFlag.OPTIMIZED_PROJECT_QUERIES);
   
   // Only use React Query if both flags are enabled
-  const shouldUseReactQuery = useReactQuery && useOptimizedQueries;
+  const useReactQueryForProjects = shouldUseReactQuery() && useOptimizedQueries;
   
   // React Query implementation
   const queryResult = useQuery({
     queryKey: ['projects', { limit }],
     queryFn: () => fetchProjects(limit),
-    enabled: shouldUseReactQuery,
+    enabled: useReactQueryForProjects,
   });
   
   // Traditional fetch implementation
   useEffect(() => {
-    if (!shouldUseReactQuery) {
+    if (!useReactQueryForProjects) {
       const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -78,10 +77,10 @@ export function useProjects(limit?: number) {
       
       fetchData();
     }
-  }, [limit, shouldUseReactQuery]);
+  }, [limit, useReactQueryForProjects]);
   
   // Return a unified interface regardless of which implementation is used
-  if (shouldUseReactQuery) {
+  if (useReactQueryForProjects) {
     return {
       projects: queryResult.data || [],
       isLoading: queryResult.isLoading,

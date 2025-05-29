@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { FeatureFlag, useFeatureFlags } from '@/lib/feature-flags';
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
+import { shouldUseReactQuery } from '@/lib/react-query';
 
 // Define task type based on the current implementation
 export type Task = {
@@ -44,24 +45,22 @@ export function useTasks(projectId?: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
-  // Access feature flags
-  const { isEnabled } = useFeatureFlags();
-  const useReactQuery = isEnabled(FeatureFlag.USE_REACT_QUERY);
-  const useOptimizedQueries = isEnabled(FeatureFlag.OPTIMIZED_TASK_QUERIES);
+  // Check if we should use optimized queries
+  const useOptimizedQueries = isFeatureEnabled(FeatureFlag.OPTIMIZED_TASK_QUERIES);
   
   // Only use React Query if both flags are enabled
-  const shouldUseReactQuery = useReactQuery && useOptimizedQueries;
+  const useReactQueryForTasks = shouldUseReactQuery() && useOptimizedQueries;
   
   // React Query implementation
   const queryResult = useQuery({
     queryKey: ['tasks', { projectId }],
     queryFn: () => fetchTasks(projectId),
-    enabled: shouldUseReactQuery,
+    enabled: useReactQueryForTasks,
   });
   
   // Traditional fetch implementation
   useEffect(() => {
-    if (!shouldUseReactQuery) {
+    if (!useReactQueryForTasks) {
       const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -77,10 +76,10 @@ export function useTasks(projectId?: string) {
       
       fetchData();
     }
-  }, [projectId, shouldUseReactQuery]);
+  }, [projectId, useReactQueryForTasks]);
   
   // Return a unified interface regardless of which implementation is used
-  if (shouldUseReactQuery) {
+  if (useReactQueryForTasks) {
     return {
       tasks: queryResult.data || [],
       isLoading: queryResult.isLoading,

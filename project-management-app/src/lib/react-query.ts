@@ -1,11 +1,9 @@
 import { 
   QueryClient, 
-  QueryClientProvider, 
   QueryKey, 
   UseQueryOptions 
 } from '@tanstack/react-query';
-import { ReactNode } from 'react';
-import { FeatureFlag, useFeatureFlags } from './feature-flags';
+import { FeatureFlag, isFeatureEnabled } from './feature-flags';
 
 // Create a client
 export const queryClient = new QueryClient({
@@ -19,16 +17,9 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Conditional QueryClientProvider that only wraps children if the feature flag is enabled
-export function ConditionalQueryClientProvider({ children }: { children: ReactNode }) {
-  const { isEnabled } = useFeatureFlags();
-  const useReactQuery = isEnabled(FeatureFlag.USE_REACT_QUERY);
-
-  if (useReactQuery) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  }
-
-  return <>{children}</>;
+// Check if React Query should be used
+export function shouldUseReactQuery(): boolean {
+  return isFeatureEnabled(FeatureFlag.USE_REACT_QUERY);
 }
 
 // Type for conditional query options

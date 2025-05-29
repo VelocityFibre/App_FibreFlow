@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
-import { FeatureFlag, useFeatureFlags } from '@/lib/feature-flags';
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
+import { shouldUseReactQuery } from '@/lib/react-query';
 import { Project } from './useProjects';
 
 // Optimized function to fetch a single project
@@ -29,24 +30,22 @@ export function useProject(id: string | undefined) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
-  // Access feature flags
-  const { isEnabled } = useFeatureFlags();
-  const useReactQuery = isEnabled(FeatureFlag.USE_REACT_QUERY);
-  const useOptimizedQueries = isEnabled(FeatureFlag.OPTIMIZED_PROJECT_QUERIES);
+  // Check if we should use optimized queries
+  const useOptimizedQueries = isFeatureEnabled(FeatureFlag.OPTIMIZED_PROJECT_QUERIES);
   
   // Only use React Query if both flags are enabled
-  const shouldUseReactQuery = useReactQuery && useOptimizedQueries;
+  const useReactQueryForProject = shouldUseReactQuery() && useOptimizedQueries;
   
   // React Query implementation
   const queryResult = useQuery({
     queryKey: ['project', id],
     queryFn: () => fetchProject(id || ''),
-    enabled: shouldUseReactQuery && !!id,
+    enabled: useReactQueryForProject && !!id,
   });
   
   // Traditional fetch implementation
   useEffect(() => {
-    if (!shouldUseReactQuery && id) {
+    if (!useReactQueryForProject && id) {
       const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -62,10 +61,10 @@ export function useProject(id: string | undefined) {
       
       fetchData();
     }
-  }, [id, shouldUseReactQuery]);
+  }, [id, useReactQueryForProject]);
   
   // Return a unified interface regardless of which implementation is used
-  if (shouldUseReactQuery) {
+  if (useReactQueryForProject) {
     return {
       project: queryResult.data,
       isLoading: queryResult.isLoading,
