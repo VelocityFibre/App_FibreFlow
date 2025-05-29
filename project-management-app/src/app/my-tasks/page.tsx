@@ -40,6 +40,7 @@ export default function MyTasksPage() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [reassigning, setReassigning] = useState<Record<string, boolean>>({});
   const [newAssignees, setNewAssignees] = useState<Record<string, string | null>>({});
+  const [newlyAssignedTask, setNewlyAssignedTask] = useState<string | null>(null);
 
   const fetchMyTasks = useCallback(async () => {
     setLoading(true);
@@ -129,22 +130,40 @@ export default function MyTasksPage() {
       );
 
       // Find the next task in sequence for this phase
+      console.log("Looking for next task in phase:", task.project_phase_id);
+      console.log("Current task_id:", task.task_id);
+      
+      // First, let's see what tasks exist in this phase
+      const { data: allPhaseTasks } = await supabase
+        .from("project_tasks")
+        .select("*, task:task_id(*)")
+        .eq("project_phase_id", task.project_phase_id)
+        .order("task_id");
+      
+      console.log("All tasks in phase:", allPhaseTasks);
+      
+      // Find unstarted or pending tasks in the same phase
       const { data: nextTasks, error: nextTaskError } = await supabase
         .from("project_tasks")
-        .select("*")
+        .select("*, task:task_id(*)")
         .eq("project_phase_id", task.project_phase_id)
-        .eq("status", "not_started")
+        .in("status", ["not_started", "pending"]) // Check for both possible initial statuses
         .order("task_id")
         .limit(1);
 
+      console.log("Next tasks found:", nextTasks);
+      
       if (nextTaskError) {
         console.error("Error finding next task:", nextTaskError);
       } else if (nextTasks && nextTasks.length > 0) {
-        // Automatically start the next task
+        // Automatically start the next task and assign it to the same user
         const nextTask = nextTasks[0];
         const { error: updateError } = await supabase
           .from("project_tasks")
-          .update({ status: "in_progress" })
+          .update({ 
+            status: "in_progress",
+            assigned_to: currentUser // Assign to the same person who completed the previous task
+          })
           .eq("id", nextTask.id);
 
         if (updateError) {
@@ -157,10 +176,26 @@ export default function MyTasksPage() {
             nextTask.id,
             {
               status: "in_progress",
+              assigned_to: currentUser,
               automaticProgression: true,
               previousTaskId: taskId
             }
           );
+
+          // Set the newly assigned task to highlight it
+          setNewlyAssignedTask(nextTask.id);
+        }
+      } else {
+        console.log("No next task found in phase");
+        // Check if this was the last task in the phase
+        const remainingTasks = allPhaseTasks?.filter(t => 
+          t.id !== task.id && 
+          t.status !== "completed"
+        );
+        
+        if (!remainingTasks || remainingTasks.length === 0) {
+          // All tasks in this phase are completed
+          alert("Congratulations! You've completed all tasks in this phase.");
         }
       }
 
@@ -218,6 +253,25 @@ export default function MyTasksPage() {
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">My Tasks</h1>
       
+      {newlyAssignedTask && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100">New Task Automatically Assigned!</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                The next task in the sequence has been assigned to you. You can reassign it to another team member if needed.
+              </p>
+            </div>
+            <button
+              onClick={() => setNewlyAssignedTask(null)}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+      
       {loading ? (
         <div className="text-center py-10">Loading your tasks...</div>
       ) : tasks.length === 0 ? (
@@ -227,10 +281,21 @@ export default function MyTasksPage() {
       ) : (
         <div className="space-y-6">
           {tasks.map(task => (
-            <div key={task.id} className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div 
+              key={task.id} 
+              className={`shadow-md rounded-lg p-6 border ${
+                newlyAssignedTask === task.id 
+                  ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-300 dark:border-blue-700 ring-2 ring-blue-400' 
+                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+              }`}>
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-semibold">{task.task.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">{task.task.title || task.task.name || `Task ${task.task_id}`}</h3>
+                    {newlyAssignedTask === task.id && (
+                      <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">New</span>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Project: <Link href={`/projects/${task.project_phase.project.id}`} className="text-blue-600 dark:text-blue-400 hover:underline">
                       {task.project_phase.project.project_name}

@@ -23,24 +23,6 @@ export default function PhasesTasksAdmin() {
   const [phases, setPhases] = useState<Phase[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [setupLoading, setSetupLoading] = useState(false);
-  const [setupResult, setSetupResult] = useState<string>("");
-  
-  // Phase One sequential tasks
-  const phaseOneSequentialTasks = [
-    { id: 1, title: "Planning - Commercial", description: "Initial commercial planning for the project" },
-    { id: 2, title: "Wayleave Secured", description: "Ensure all necessary permissions are obtained" },
-    { id: 3, title: "BSS Signed", description: "Business Support System documentation signed" },
-    { id: 4, title: "MSS signed", description: "Managed Service System documentation signed" },
-    { id: 5, title: "PO received", description: "Purchase Order received and processed" },
-    { id: 6, title: "Planning - HLD", description: "High Level Design planning" },
-    { id: 7, title: "Planning - Splice Diagram", description: "Create and finalize splice diagrams" },
-    { id: 8, title: "Planning - Backhaul", description: "Plan backhaul connectivity" },
-    { id: 9, title: "BOQ Finalized", description: "Bill of Quantities finalized" },
-    { id: 10, title: "Warehousing", description: "Organize warehousing requirements" },
-    { id: 11, title: "Contractor Quotes", description: "Obtain and review contractor quotes" },
-    { id: 12, title: "Supplier Quotes", description: "Obtain and review supplier quotes" }
-  ];
   
   // Phase form state
   const [newPhase, setNewPhase] = useState<{
@@ -189,73 +171,7 @@ export default function PhasesTasksAdmin() {
     }
   }
   
-  async function createPhaseOneSequentialTasks() {
-    setSetupLoading(true);
-    setSetupResult("");
-    
-    try {
-      // First, check if we already have these tasks to avoid duplicates
-      const { data: existingTasks, error: checkError } = await supabase
-        .from("tasks")
-        .select("title")
-        .in('title', phaseOneSequentialTasks.map(task => task.title));
-      
-      if (checkError) {
-        console.error("Error checking existing tasks:", checkError);
-        setSetupResult(`Error checking existing tasks: ${checkError.message}`);
-        setSetupLoading(false);
-        return;
-      }
-      
-      // Filter out tasks that already exist
-      const existingTaskTitles = existingTasks?.map(task => task.title) || [];
-      const tasksToCreate = phaseOneSequentialTasks.filter(task => !existingTaskTitles.includes(task.title));
-      
-      if (tasksToCreate.length === 0) {
-        setSetupResult("All Phase One sequential tasks already exist.");
-        setSetupLoading(false);
-        return;
-      }
-      
-      // Add status to each task (remove notes field as it doesn't exist in the schema)
-      const tasksWithStatus = tasksToCreate.map(task => ({
-        ...task,
-        status: 'planning'
-      }));
-      
-      // Insert tasks
-      const { data, error } = await supabase
-        .from("tasks")
-        .insert(tasksWithStatus)
-        .select();
-      
-      if (error) {
-        console.error("Error creating sequential tasks:", error);
-        setSetupResult(`Error creating sequential tasks: ${error.message}`);
-      } else {
-        console.log("Created tasks:", data);
-        setSetupResult(`Successfully created ${data.length} Phase One sequential tasks.`);
-        
-        // Create audit logs for each task
-        for (const task of data) {
-          await createAuditLog(
-            AuditAction.CREATE,
-            AuditResourceType.PROJECT_TASK,
-            task.id.toString(),
-            { title: task.title }
-          );
-        }
-        
-        // Refresh the tasks list
-        fetchPhasesAndTasks();
-      }
-    } catch (error) {
-      console.error("Unexpected error creating sequential tasks:", error);
-      setSetupResult(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setSetupLoading(false);
-    }
-  }
+  // Function to create tasks has been removed
   
   async function handleDeletePhase(id: string) {
     if (!confirm("Are you sure you want to delete this phase? This will also delete all associated tasks.")) {
@@ -321,60 +237,6 @@ export default function PhasesTasksAdmin() {
     }
   }
   
-  async function setupDefaultPhases() {
-    setSetupLoading(true);
-    setSetupResult("");
-    
-    try {
-      // First check if phases already exist
-      if (phases.length > 0) {
-        setSetupResult("Phases already exist in the database. You can add more phases manually.");
-        setSetupLoading(false);
-        return;
-      }
-      
-      // Define default phases
-      const defaultPhases = [
-        { name: "Planning", description: "Initial project planning and requirements gathering", order_no: 1 },
-        { name: "Design", description: "Technical design and architecture", order_no: 2 },
-        { name: "Implementation", description: "Development and construction", order_no: 3 },
-        { name: "Testing", description: "Quality assurance and testing", order_no: 4 },
-        { name: "Deployment", description: "Final deployment and handover", order_no: 5 }
-      ];
-      
-      // Insert phases
-      const { data: phasesData, error } = await supabase
-        .from("phases")
-        .insert(defaultPhases)
-        .select();
-      
-      if (error) {
-        throw new Error(`Error creating phases: ${error.message}`);
-      }
-      
-      // Create audit logs for each phase
-      for (const phase of phasesData) {
-        await createAuditLog(
-          AuditAction.CREATE,
-          AuditResourceType.PHASE,
-          phase.id,
-          { name: phase.name }
-        );
-      }
-      
-      // Define default tasks for each phase
-      const defaultTasks = [];
-      for (const phase of phasesData) {
-        defaultTasks.push(
-          { title: `Requirements for ${phase.name}`, description: `Gather requirements for ${phase.name} phase`, phase_id: phase.id },
-          { title: `Documentation for ${phase.name}`, description: `Create documentation for ${phase.name} phase`, phase_id: phase.id }
-        );
-      }
-      
-      // Insert tasks
-      const { data: tasksData, error: tasksError } = await supabase
-        .from("tasks")
-        .insert(defaultTasks)
         .select();
       
       if (tasksError) {
@@ -570,7 +432,7 @@ export default function PhasesTasksAdmin() {
           {loading ? (
             <p className="text-center py-4">Loading tasks...</p>
           ) : tasks.length === 0 ? (
-            <p className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded">No tasks found. Add your first task or use the quick setup.</p>
+            <p className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded">No tasks found. Add your first task above.</p>
           ) : (
             <div className="space-y-3">
               {tasks.map((task) => (

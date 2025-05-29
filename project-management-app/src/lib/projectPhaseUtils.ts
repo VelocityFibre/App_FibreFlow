@@ -121,13 +121,12 @@ export async function autoAssignFirstPhaseAndTasks({
   );
 
   // Get default tasks for phase
-  // Modify the query to match your actual database schema
-  // It seems the tasks table doesn't have a phase_id column
-  // Let's try to get all tasks and then we'll handle phase association differently
+  // For Planning phase (first phase), we should get all tasks
+  // Since tasks don't have phase_id, we'll get all tasks and assign them to the first phase
   const { data: defaultTasks, error: defaultTasksError } = await supabase
     .from("tasks")
     .select("*")
-    .limit(5); // Just get a few default tasks for now
+    .order("id"); // Get all tasks, ordered by ID
   
   if (defaultTasksError) {
     console.error("Error fetching default tasks:", defaultTasksError);

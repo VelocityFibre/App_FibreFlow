@@ -115,6 +115,25 @@ For detailed schema information, see `project-management-app/SCHEMA.md`
 
 ## Recent Updates
 
+### Enhanced Dashboard (January 2025)
+- Added comprehensive task statistics showing daily completions and top performers
+- Implemented project summaries with current phase and pending task tracking
+- Added days-since-assignment tracking with delay indicators
+- Fixed table name references (projects vs new_projects)
+- Improved data fetching with proper staff member lookups
+
+### Admin Tasks Management Page (January 2025)
+- Created comprehensive admin page for viewing all tasks across projects
+- Added advanced filtering by assignee, project, and status
+- Implemented inline task status and assignee updates
+- Added task grouping by assignee with summary statistics
+
+### Automatic Task Progression (January 2025)
+- Implemented automatic next task assignment when completing a task
+- Added visual indicators for newly assigned tasks
+- Fixed task sequence detection for proper workflow progression
+- Enhanced My Tasks page with reassignment capabilities
+
 ### Task Assignment System (May 2025)
 - Fixed task assignment dropdown functionality
 - Resolved data type mismatches between staff IDs and assignment fields

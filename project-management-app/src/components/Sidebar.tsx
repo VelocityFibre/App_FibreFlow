@@ -16,8 +16,9 @@ const navItems = [
 ];
 
 const adminItems = [
-  { href: '/admin/audit-logs', label: 'Audit Logs' },
+  { href: '/admin/tasks', label: 'All Tasks' },
   { href: '/admin/phases-tasks', label: 'Phases & Tasks' },
+  { href: '/admin/audit-logs', label: 'Audit Logs' },
 ];
 
 export default function Sidebar() {
