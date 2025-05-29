@@ -89,6 +89,12 @@ After starting the application for the first time:
   - Record user actions with timestamps and details
   - Filterable audit log viewer for administrators
   - Support for compliance and accountability requirements
+- **Performance Optimization System:**
+  - Feature flag system for safe parallel development
+  - React Query integration for optimized data caching
+  - Real-time performance monitoring and metrics collection
+  - Automated benchmark testing for optimization validation
+  - Browser DevTools integration for detailed performance analysis
 
 ### Optional Advanced Features
 - Real-time collaboration
@@ -193,6 +199,8 @@ Role-based access is enforced via Supabase policies and (optionally) in-app logi
 | Enhanced Project Management      | Implemented  |
 | Comprehensive Audit Trail        | Implemented  |
 | Spreadsheet-style Data Grid      | Implemented  |
+| Performance Optimization System  | Implemented  |
+| Feature Flag Management          | Implemented  |
 | Real-time Collaboration          | Optional     |
 | Notifications/Activity Feed      | Optional     |
 | Import/Export Data               | Optional     |
@@ -230,6 +238,33 @@ See [`plan.md`](../plan.md) for the full feature and style specification and det
   4. Testing - Quality assurance and testing
   5. Deployment - Final deployment and handover
 - Visit the auto-setup page at `/auto-setup` to initialize these phases and tasks.
+
+## Usage: Performance Optimization
+- Navigate to **Admin > Performance** to access the performance dashboard
+- **Real-time Monitoring:** View live performance metrics as you use the app
+- **Feature Flags:** Toggle optimizations on/off via **Admin > Feature Flags**
+- **Benchmark Testing:** Click "Run Benchmark" to compare optimized vs baseline performance
+- **DevTools Integration:** 
+  - Open browser DevTools (F12) → Network tab to see request timings
+  - Look for React Query DevTools icon (bottom-right) when optimizations are enabled
+  - Check console for performance logs marked with ⚡ symbols
+- **Performance Features:**
+  - React Query for data caching and deduplication
+  - Optimized database queries for faster response times
+  - Error boundaries for better error isolation
+  - Memory usage and network request monitoring
+
+## Usage: Feature Flags
+- Navigate to **Admin > Feature Flags** to manage optimization features
+- **Safe Development:** All flags disabled by default to ensure stability
+- **Testing Progress:** Visual progress indicator shows which optimizations are active
+- **Available Flags:**
+  - Performance Monitoring: Track baseline metrics
+  - React Query: Enable data caching
+  - Optimized Project Queries: Faster project data fetching
+  - Optimized Task Queries: Faster task data fetching
+  - Error Boundaries: Better error handling
+- **Testing Protocol:** Always test with flags OFF before merging code
 
 ---
 

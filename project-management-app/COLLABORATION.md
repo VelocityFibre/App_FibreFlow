@@ -155,7 +155,7 @@ Benefits:
 - Easier to test in isolation
 - Can be deployed separately
 
-## 5. GitHub Actions for CI/CD
+## 6. GitHub Actions for CI/CD
 
 Set up GitHub Actions workflows:
 
@@ -185,7 +185,7 @@ jobs:
       - run: node scripts/check-schema.js
 ```
 
-## 6. Database Change Management
+## 7. Database Change Management
 
 ### Migration Scripts
 - Create numbered migration scripts (like `001_create_customers.sql`, `002_add_customer_fields.sql`)
@@ -218,7 +218,7 @@ Create a PR template that requires documenting database changes:
 <!-- If you made database changes, describe them here -->
 ```
 
-## 7. Implementation Plan
+## 8. Implementation Plan
 
 1. **First Phase: API Layer**
    - Create API routes for existing functionality

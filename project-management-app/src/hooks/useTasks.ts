@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
 import { shouldUseReactQuery } from '@/lib/react-query';
+import { measureAsync } from '@/lib/performance';
 
 // Define task type based on the current implementation
 export type Task = {
@@ -20,22 +21,24 @@ export type Task = {
 
 // Optimized function to fetch tasks
 async function fetchTasks(projectId?: string): Promise<Task[]> {
-  let query = supabase
-    .from("project_tasks")
-    .select("id, name, description, status, assigned_to, project_id, created_at, updated_at");
-  
-  if (projectId) {
-    query = query.eq("project_id", projectId);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
-    console.error("Error fetching tasks:", error);
-    throw error;
-  }
-  
-  return data || [];
+  return measureAsync('fetchTasks', async () => {
+    let query = supabase
+      .from("project_tasks")
+      .select("id, name, description, status, assigned_to, project_id, created_at, updated_at");
+    
+    if (projectId) {
+      query = query.eq("project_id", projectId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error("Error fetching tasks:", error);
+      throw error;
+    }
+    
+    return data || [];
+  });
 }
 
 // Hook that works with or without React Query based on feature flag

@@ -20,6 +20,7 @@ const adminItems = [
   { href: '/admin/phases-tasks', label: 'Phases & Tasks' },
   { href: '/admin/audit-logs', label: 'Audit Logs' },
   { href: '/admin/feature-flags', label: 'Feature Flags' },
+  { href: '/admin/performance', label: 'Performance' },
 ];
 
 export default function Sidebar() {

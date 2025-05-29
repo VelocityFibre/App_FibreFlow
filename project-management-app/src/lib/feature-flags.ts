@@ -14,7 +14,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   [FeatureFlag.OPTIMIZED_PROJECT_QUERIES]: false,
   [FeatureFlag.OPTIMIZED_TASK_QUERIES]: false,
   [FeatureFlag.USE_ERROR_BOUNDARIES]: false,
-  [FeatureFlag.PERFORMANCE_MONITORING]: false,
+  [FeatureFlag.PERFORMANCE_MONITORING]: true,
 };
 
 // Check if a feature flag is enabled

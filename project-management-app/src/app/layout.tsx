@@ -3,7 +3,9 @@ import { Inter } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
 import ThemeToggle from "@/components/ThemeToggle";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "@/lib/react-query";
+import { shouldUseReactQuery } from "@/lib/react-query";
 import "./globals.css";
 
 const inter = Inter({
@@ -47,6 +49,13 @@ export default function RootLayout({
               </div>
             </main>
           </div>
+          {/* React Query DevTools - only shows when React Query is enabled */}
+          {shouldUseReactQuery() && (
+            <ReactQueryDevtools 
+              initialIsOpen={false} 
+              position="bottom-right"
+            />
+          )}
         </QueryClientProvider>
       </body>
     </html>
