@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { isFeatureEnabled, FeatureFlag } from '@/lib/feature-flags';
 import { 
   BarChart, 
   LineChart, 
@@ -80,9 +79,6 @@ export default function AnalyticsDashboard() {
     groupBy: 'month',
   });
 
-  // Check if analytics dashboard is enabled via feature flag
-  const isAnalyticsEnabled = isFeatureEnabled(FeatureFlag.ANALYTICS_DASHBOARD);
-
   useEffect(() => {
     // Simulate data loading
     const loadData = async () => {
@@ -94,23 +90,6 @@ export default function AnalyticsDashboard() {
     
     loadData();
   }, []);
-
-  if (!isAnalyticsEnabled) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh] bg-white dark:bg-gray-900 rounded-lg shadow p-8">
-        <div className="text-6xl mb-4">🔒</div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Analytics Dashboard is Disabled</h1>
-        <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-6">
-          The analytics dashboard is currently disabled via feature flags. Please contact your administrator to enable this feature.
-        </p>
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-          <p className="text-sm text-blue-800 dark:text-blue-300">
-            To enable this feature, go to <strong>Admin &gt; Feature Flags</strong> and enable the <strong>Analytics Dashboard</strong> feature.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -237,7 +216,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       {/* Performance Monitor */}
-      {isFeatureEnabled(FeatureFlag.PERFORMANCE_MONITORING) && <PerformanceMonitor />}
+      <PerformanceMonitor />
     </div>
   );
 }

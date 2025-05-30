@@ -16,7 +16,6 @@ const navItems = [
   { href: '/grid', label: 'Grid' },
   { href: '/materials', label: 'Materials' },
   { href: '/analytics/dashboard', label: 'Analytics', featureFlag: FeatureFlag.ANALYTICS_DASHBOARD },
-  { href: '/auth', label: 'Settings' },
 ];
 
 const adminItems = [
@@ -25,6 +24,7 @@ const adminItems = [
   { href: '/admin/audit-logs', label: 'Audit Logs' },
   { href: '/admin/feature-flags', label: 'Feature Flags' },
   { href: '/admin/performance', label: 'Performance' },
+  { href: '/admin/auth', label: 'Authentication' },
 ];
 
 const analyticsItems = [

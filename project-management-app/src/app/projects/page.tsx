@@ -68,8 +68,8 @@ function ProjectsContent() {
   });
 
   const [locations, setLocations] = useState<Location[]>([]);
-  const [projectManager, setProjectManager] = useState<number | null>(null);
-  const [taskAssignee, setTaskAssignee] = useState<number | null>(null);
+  const [projectManager, setProjectManager] = useState<string | null>(null);
+  const [taskAssignee, setTaskAssignee] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<{success: boolean, message: string} | null>(null);
 
   // Define fetch functions with useCallback to prevent infinite loops
@@ -305,8 +305,8 @@ function ProjectsContent() {
         try {
           await autoAssignFirstPhaseAndTasks({
             projectId: data[0].id,
-            phaseAssigneeId: String(effectiveProjectManager), // Use project manager as the phase assignee
-            taskAssigneeId: taskAssignee !== null ? String(taskAssignee) : String(effectiveProjectManager), // If no task assignee is specified, use project manager
+            phaseAssigneeId: effectiveProjectManager, // Already a string now
+            taskAssigneeId: taskAssignee !== null ? taskAssignee : effectiveProjectManager, // Already strings now
           });
         } catch (err: unknown) {
           console.error("Error auto-assigning phase/tasks:", err);
@@ -384,14 +384,14 @@ function ProjectsContent() {
           title="Daily Tracker"
           description="Track daily project progress, submit reports, and monitor milestones."
           actionLabel="Add Daily Report"
-          actionLink="/projects?view=daily-tracker"
+          actionLink="/projects/daily-tracker"
           icon={<FiCalendar size={24} />}
         />
         <ModuleOverviewCard
           title="Issues Tracker"
           description="Track and resolve issues that arise during project implementation."
           actionLabel="View Issues"
-          actionLink="/projects?view=issues"
+          actionLink="/projects/issues"
           icon={<FiAlertCircle size={24} />}
         />
       </ModuleOverviewLayout>

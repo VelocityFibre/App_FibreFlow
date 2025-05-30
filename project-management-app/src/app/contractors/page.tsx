@@ -1412,62 +1412,70 @@ function ContractorsContent() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {contractors.map((contractor) => (
-                    <tr key={contractor.id}>
-                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                    <tr 
+                      key={contractor.id} 
+                      onClick={() => setEditing(contractor.id)}
+                      className="cursor-pointer transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white group-hover:font-medium">
                         {editing === contractor.id ? (
                           <input
                             type="text"
                             value={contractor.company_registered_name}
                             onChange={e => handleEditField(contractor.id, "company_registered_name", e.target.value)}
                             className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           contractor.company_registered_name
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white group-hover:font-medium">
                         {editing === contractor.id ? (
                           <input
                             type="text"
                             value={contractor.company_registration_number}
                             onChange={e => handleEditField(contractor.id, "company_registration_number", e.target.value)}
                             className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           contractor.company_registration_number
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white group-hover:font-medium">
                         {editing === contractor.id ? (
                           <input
                             type="text"
                             value={contractor.vat_number}
                             onChange={e => handleEditField(contractor.id, "vat_number", e.target.value)}
                             className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           contractor.vat_number
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white group-hover:font-medium">
                         {editing === contractor.id ? (
                           <input
                             type="text"
                             value={Array.isArray(contractor.type_of_services_offered) ? contractor.type_of_services_offered.join(", ") : ""}
                             onChange={e => handleEditField(contractor.id, "type_of_services_offered", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
                             className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           Array.isArray(contractor.type_of_services_offered) ? contractor.type_of_services_offered.join(", ") : ""
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white group-hover:font-medium">
                         {editing === contractor.id ? (
                           <input
                             type="text"
                             value={contractor.contractor_performance}
                             onChange={e => handleEditField(contractor.id, "contractor_performance", e.target.value)}
                             className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           contractor.contractor_performance
@@ -1478,13 +1486,19 @@ function ContractorsContent() {
                           <div className="flex space-x-2">
                             <button 
                               className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-                              onClick={() => handleSave(contractor.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSave(contractor.id);
+                              }}
                             >
                               Save
                             </button>
                             <button 
                               className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-                              onClick={() => setEditing(null)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditing(null);
+                              }}
                             >
                               Cancel
                             </button>
@@ -1492,7 +1506,10 @@ function ContractorsContent() {
                         ) : (
                           <button 
                             className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-                            onClick={() => setEditing(contractor.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditing(contractor.id);
+                            }}
                           >
                             Edit
                           </button>

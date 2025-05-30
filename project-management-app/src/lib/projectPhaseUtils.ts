@@ -149,12 +149,10 @@ export async function autoAssignFirstPhaseAndTasks({
         status: index === 0 ? "in_progress" : "not_started" // First task is automatically started
       };
       
-      // If we have a valid project manager ID, use it for the first task
-      // This ensures at least the first task has an assignee
-      if (index === 0 && phaseAssigneeId !== null && phaseAssigneeId !== undefined && phaseAssigneeId !== '') {
-        taskData.assigned_to = phaseAssigneeId;
-        console.log(`Assigning first task to phase assignee: ${phaseAssigneeId}`);
-      }
+      // Skip assignment until the database schema is fixed
+      // The assigned_to column is INTEGER but staff.id is TEXT
+      // This causes a foreign key constraint violation
+      console.log('Task assignment skipped - schema mismatch between project_tasks.assigned_to (INTEGER) and staff.id (TEXT)');
       
       return taskData;
     });

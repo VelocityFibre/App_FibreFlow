@@ -6,13 +6,48 @@ body {
 }
 
 body {
-  @apply bg-gray-950 text-gray-100 font-sans antialiased;
+  @apply bg-gray-950 text-gray-200 font-sans antialiased;
 }
 
 .dark body {
-  @apply bg-gray-950 text-gray-100;
+  @apply bg-gray-950 text-gray-200;
 }
 
 .light body {
-  @apply bg-white text-gray-900;
+  @apply bg-white text-gray-800;
+}
+
+/* Ensure all text has sufficient contrast */
+.text-gray-400 {
+  @apply text-gray-600;
+}
+
+.text-gray-500 {
+  @apply text-gray-700;
+}
+
+.text-gray-700 {
+  @apply text-gray-900;
+}
+
+.dark .text-gray-400 {
+  @apply text-gray-300;
+}
+
+.dark .text-gray-500 {
+  @apply text-gray-300;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-100;
+}
+
+/* Ensure links and interactive elements have good contrast */
+a, button, .interactive {
+  @apply font-medium;
+}
+
+/* Improve form input text contrast */
+input, textarea, select {
+  @apply text-gray-800 dark:text-gray-200;
 }

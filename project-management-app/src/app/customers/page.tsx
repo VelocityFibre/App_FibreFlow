@@ -79,27 +79,26 @@ function CustomersContent() {
         description="Manage your customer relationships and information"
         actions={<ActionButton label="Add Customer" variant="outline" onClick={() => window.location.href = "/customers?view=add"} />}
       >
-        <ModuleOverviewCard
-          title="Customer Management"
-          description="View and manage your customer database."
-          actionLabel="View Customers"
-          actionLink="/customers?view=management"
-          icon={<FiUsers size={24} />}
-        />
-        <ModuleOverviewCard
-          title="Add New Customer"
-          description="Register new customers in your database."
-          actionLabel="Add Customer"
-          actionLink="/customers?view=add"
-          icon={<FiUserPlus size={24} />}
-        />
-        <ModuleOverviewCard
-          title="Customer Reports"
-          description="Generate and view reports on customer data."
-          actionLabel="View Reports"
-          actionLink="/customers?view=reports"
-          icon={<FiClipboard size={24} />}
-        />
+        <div className="md:col-span-1 lg:col-span-1 flex">
+          <ModuleOverviewCard
+            title="Customer Management"
+            description="View and manage your customer database."
+            actionLabel="View Customers"
+            actionLink="/customers?view=management"
+            icon={<FiUsers size={24} />}
+            className="w-full h-full"
+          />
+        </div>
+        <div className="md:col-span-1 lg:col-span-1 flex">
+          <ModuleOverviewCard
+            title="Customer Reports"
+            description="Generate and view reports on customer data."
+            actionLabel="View Reports"
+            actionLink="/customers?view=reports"
+            icon={<FiClipboard size={24} />}
+            className="w-full h-full"
+          />
+        </div>
       </ModuleOverviewLayout>
     );
   }

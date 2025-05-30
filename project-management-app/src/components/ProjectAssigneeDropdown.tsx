@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 interface ProjectAssigneeDropdownProps {
-  value: number | null;
-  onChange: (value: number | null) => void;
+  value: string | null;
+  onChange: (value: string | null) => void;
   className?: string;
   label?: string;
 }
@@ -13,7 +13,7 @@ interface ProjectAssigneeDropdownProps {
 export default function ProjectAssigneeDropdown({ value, onChange, className = '', label = 'Select Assignee' }: ProjectAssigneeDropdownProps) {
   // Define a proper type for staff members
   interface StaffMember {
-    id: number;
+    id: string; // Changed to string to match database
     name: string;
     [key: string]: unknown; // For any other properties
   }
@@ -39,19 +39,11 @@ export default function ProjectAssigneeDropdown({ value, onChange, className = '
 
   // Handle selection change with proper logging
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    let selectedValue: number | null = null;
-    
-    if (e.target.value) {
-      // Make sure we have a valid number
-      const parsedValue = parseInt(e.target.value, 10);
-      if (!isNaN(parsedValue)) {
-        selectedValue = parsedValue;
-      }
-    }
+    const selectedValue = e.target.value || null;
     
     console.log('ProjectAssigneeDropdown selection changed:', { 
       rawValue: e.target.value,
-      parsedValue: selectedValue 
+      selectedValue: selectedValue 
     });
     
     onChange(selectedValue);
