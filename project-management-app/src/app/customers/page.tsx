@@ -6,12 +6,16 @@ import { useSearchParams } from "next/navigation";
 import ModuleOverviewLayout from "@/components/ModuleOverviewLayout";
 import ModuleOverviewCard from "@/components/ModuleOverviewCard";
 import ActionButton from "@/components/ActionButton";
-import { FiUsers, FiUserPlus, FiClipboard } from 'react-icons/fi';
+import ArchivedItemsManager from "@/components/ArchivedItemsManager";
+import { useSoftDelete } from "@/hooks/useSoftDelete";
+import { excludeArchived, onlyArchived } from "@/lib/softDelete";
+import { FiUsers, FiUserPlus, FiClipboard, FiArchive, FiTrash2 } from 'react-icons/fi';
 
 function CustomersContent() {
   const searchParams = useSearchParams();
   const view = searchParams.get("view");
   const [customers, setCustomers] = useState<any[]>([]);
+  const [archivedCustomers, setArchivedCustomers] = useState<any[]>([]);
   const [editing, setEditing] = useState<string|null>(null);
   const [newCustomer, setNewCustomer] = useState({ 
     name: "", 
@@ -22,21 +26,40 @@ function CustomersContent() {
     postal_code: "" 
   });
   const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const { archive, loading: archiveLoading, error: archiveError } = useSoftDelete();
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [showArchived]);
 
   async function fetchCustomers() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("new_customers").select("*");
+      // Fetch active customers (not archived)
+      const { data: activeData, error: activeError } = await supabase
+        .from("new_customers")
+        .select("*")
+        .is('archived_at', null);
       
-      if (error) {
-        console.error("Error fetching customers:", error);
+      if (activeError) {
+        console.error("Error fetching active customers:", activeError);
       } else {
-        console.log("Fetched customers:", data);
-        setCustomers(data || []);
+        setCustomers(activeData || []);
+      }
+
+      // Fetch archived customers if needed
+      if (showArchived) {
+        const { data: archivedData, error: archivedError } = await supabase
+          .from("new_customers")
+          .select("*")
+          .not('archived_at', 'is', null);
+        
+        if (archivedError) {
+          console.error("Error fetching archived customers:", archivedError);
+        } else {
+          setArchivedCustomers(archivedData || []);
+        }
       }
     } catch (error) {
       console.error("Unexpected error in fetchCustomers:", error);
@@ -69,6 +92,19 @@ function CustomersContent() {
 
   function handleEditField(id: string, field: string, value: string) {
     setCustomers((prev) => prev.map((c) => c.id === id ? { ...c, [field]: value } : c));
+  }
+
+  async function handleArchive(id: string, name: string) {
+    if (confirm(`Are you sure you want to archive customer "${name}"? This will hide it from the main view but can be restored later.`)) {
+      const result = await archive('new_customers', id, {
+        details: { customerName: name },
+        invalidateQueries: ['customers']
+      });
+      
+      if (result.success) {
+        fetchCustomers();
+      }
+    }
   }
 
   // If we're on the main customers page and no view is specified, show the overview layout
@@ -188,102 +224,47 @@ function CustomersContent() {
       {loading ? (
         <p className="text-gray-600 dark:text-gray-300">Loading customers...</p>
       ) : (
-        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Name</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Email</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Address</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Projects</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-            {customers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <input
-                      type="text"
-                      value={customer.name}
-                      onChange={e => handleEditField(customer.id, "name", e.target.value)}
-                      className="border rounded px-2 py-1"
-                    />
-                  ) : (
-                    customer.name
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <input
-                      type="email"
-                      value={customer.email}
-                      onChange={e => handleEditField(customer.id, "email", e.target.value)}
-                      className="border rounded px-2 py-1"
-                    />
-                  ) : (
-                    customer.email
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        placeholder="Address Line 1"
-                        value={customer.address_line1 || ''}
-                        onChange={e => handleEditField(customer.id, "address_line1", e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Address Line 2"
-                        value={customer.address_line2 || ''}
-                        onChange={e => handleEditField(customer.id, "address_line2", e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="City"
-                          value={customer.city || ''}
-                          onChange={e => handleEditField(customer.id, "city", e.target.value)}
-                          className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Postal Code"
-                          value={customer.postal_code || ''}
-                          onChange={e => handleEditField(customer.id, "postal_code", e.target.value)}
-                          className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      {customer.address_line1 && <div>{customer.address_line1}</div>}
-                      {customer.address_line2 && <div>{customer.address_line2}</div>}
-                      {(customer.city || customer.postal_code) && (
-                        <div>
-                          {customer.city}{customer.city && customer.postal_code && ', '}{customer.postal_code}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  <a 
-                    href={`/projects?customer=${customer.id}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    View Projects
-                  </a>
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <>
-                      <button className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors mr-2" onClick={() => handleSave(customer.id)}>Save</button>
-                      <button className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors" onClick={() => setEditing(null)}>Cancel</button>
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 className="text-lg font-medium text-gray-900">Customer List</h3>
+            <div className="flex items-center">
+              <button 
+                onClick={() => setShowArchived(!showArchived)}
+                className="flex items-center text-sm text-gray-600 hover:text-gray-900 mr-4"
+              >
+                <FiArchive className="mr-1" />
+                {showArchived ? "Hide Archived" : "Show Archived"}
+              </button>
+            </div>
+          </div>
+          
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Name
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Email
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Address
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
                     </>
                   ) : (
                     <button className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors" onClick={() => setEditing(customer.id)}>Edit</button>

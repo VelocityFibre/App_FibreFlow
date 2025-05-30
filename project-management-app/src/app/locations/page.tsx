@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useSoftDelete } from "@/hooks/useSoftDelete";
+import { withoutArchived, onlyArchived } from "@/lib/queryHelpers";
+import ArchivedItemsManager from "@/components/ArchivedItemsManager";
+import { FiArchive, FiTrash2, FiRefreshCw } from 'react-icons/fi';
 
 interface Location {
   id: string;
@@ -9,12 +13,16 @@ interface Location {
   project_id: string;
   created_at: string;
   updated_at: string;
+  archived_at?: string | null;
 }
 
 export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
+  const [archivedLocations, setArchivedLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
   const [editing, setEditing] = useState<string|null>(null);
+  const { archive, unarchive, loading: archiveLoading, error: archiveError } = useSoftDelete();
   const [newLocation, setNewLocation] = useState<Omit<Location, 'id' | 'created_at' | 'updated_at' | 'created_time'>>({
     location_name: "",
     project_id: "",
@@ -22,17 +30,33 @@ export default function LocationsPage() {
 
   useEffect(() => {
     fetchLocations();
-  }, []);
+  }, [showArchived]);
 
   async function fetchLocations() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("locations").select("*").order("location_name");
+      // Fetch active locations
+      const { data: activeData, error: activeError } = await withoutArchived(
+        supabase.from("locations").select("*")
+      ).order("location_name");
       
-      if (error) {
-        console.error("Error fetching locations:", error);
+      if (activeError) {
+        console.error("Error fetching active locations:", activeError);
       } else {
-        setLocations(data || []);
+        setLocations(activeData || []);
+      }
+
+      // Fetch archived locations if needed
+      if (showArchived) {
+        const { data: archivedData, error: archivedError } = await onlyArchived(
+          supabase.from("locations").select("*")
+        ).order("location_name");
+        
+        if (archivedError) {
+          console.error("Error fetching archived locations:", archivedError);
+        } else {
+          setArchivedLocations(archivedData || []);
+        }
       }
     } catch (error) {
       console.error("Unexpected error in fetchLocations:", error);
@@ -81,112 +105,116 @@ export default function LocationsPage() {
     setLocations((prev) => prev.map((l) => l.id === id ? { ...l, [field]: value } : l));
   }
 
+  async function handleArchive(id: string, name: string) {
+    if (confirm(`Are you sure you want to archive location "${name}"? This will hide it from the main view but can be restored later.`)) {
+      try {
+        const result = await archive('locations', id, {
+          details: { locationName: name },
+          invalidateQueries: ['locations']
+        });
+        
+        if (result.success) {
+          fetchLocations();
+        } else if (result.error) {
+          alert(`Failed to archive location: ${result.error.message}`);
+        }
+      } catch (error) {
+        console.error("Unexpected error in handleArchive:", error);
+        alert(`An unexpected error occurred: ${error}`);
+      }
+    }
+  }
+
+  async function handleRestore(id: string, name: string) {
+    if (confirm(`Are you sure you want to restore location "${name}"?`)) {
+      try {
+        const result = await unarchive('locations', id, {
+          details: { locationName: name },
+          invalidateQueries: ['locations']
+        });
+        
+        if (result.success) {
+          fetchLocations();
+        } else if (result.error) {
+          alert(`Failed to restore location: ${result.error.message}`);
+        }
+      } catch (error) {
+        console.error("Unexpected error in handleRestore:", error);
+        alert(`An unexpected error occurred: ${error}`);
+      }
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">Locations</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Locations</h2>
+        <button 
+          onClick={() => setShowArchived(!showArchived)}
+          className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-3 py-1 rounded-md border border-gray-300 dark:border-gray-700"
+        >
+          <FiArchive className="mr-1" />
+          {showArchived ? "Hide Archived" : "Show Archived"}
+        </button>
+      </div>
       
       {/* Add new location form */}
-      <div className="mb-8 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-        <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Add New Location</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Location Name *"
-              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newLocation.location_name}
-              onChange={e => setNewLocation({ ...newLocation, location_name: e.target.value })}
-            />
+      <div className="mt-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Add New Location</h3>
+          <div className="mt-5 sm:flex sm:items-center">
+            <div className="w-full sm:max-w-xs">
+              <label htmlFor="location_name" className="sr-only">Location Name</label>
+              <input
+                type="text"
+                name="location_name"
+                id="location_name"
+                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                placeholder="Location Name"
+                value={newLocation.location_name}
+                onChange={(e) => setNewLocation({ ...newLocation, location_name: e.target.value })}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleAdd}
+              className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Add Location
+            </button>
           </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Project ID"
-              className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newLocation.project_id}
-              onChange={e => setNewLocation({ ...newLocation, project_id: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className="md:col-span-3">
-          <button
-            className="bg-black dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-            onClick={handleAdd}
-          >
-            Add Location
-          </button>
         </div>
       </div>
-
-    {/* Locations list */}
-    {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <p className="text-gray-600 dark:text-gray-300">Loading locations...</p>
+      
+      {/* Error message */}
+      {archiveError && (
+        <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-md">
+          <p className="text-sm">{archiveError.message}</p>
         </div>
-      ) : locations.length === 0 ? (
-        <div className="text-center py-12 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-          <p className="text-gray-600 dark:text-gray-300 mb-4">No locations found</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Add your first location using the form above</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow mt-6">
-          <table className="min-w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Location Name</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Project ID</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Created Time</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Created At</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Updated At</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {locations.map((location) => (
-                <tr key={location.id}>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {editing === location.id ? (
-                      <input
-                        type="text"
-                        value={location.location_name}
-                        onChange={e => handleEditField(location.id, "location_name", e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    ) : (
-                      location.location_name
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {editing === location.id ? (
-                      <input
-                        type="text"
-                        value={location.project_id}
-                        onChange={e => handleEditField(location.id, "project_id", e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    ) : (
-                      location.project_id
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {location.created_time ? location.created_time : ""}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {location.created_at ? location.created_at : ""}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {location.updated_at ? location.updated_at : ""}
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    {editing === location.id ? (
-                      <div className="flex space-x-2">
-                        <button 
-                          className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-                          onClick={() => handleSave(location.id)}
-                        >
-                          Save
-                        </button>
-                        <button 
+      )}
+      
+      {/* Active Locations */}
+      <div className="mb-8">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {showArchived ? "Active Locations" : "Locations"} ({locations.length})
+        </h3>
+        {loading ? (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Loading locations...</p>
+          </div>
+        ) : locations.length === 0 ? (
+          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <p className="text-gray-500 dark:text-gray-400">No active locations found</p>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                           className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                           onClick={() => setEditing(null)}
                         >

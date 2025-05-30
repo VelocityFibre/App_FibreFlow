@@ -54,6 +54,10 @@ npm run lint        # Run linting
 
 ## Documentation
 
+- **Implementation Roadmap**: `docs/IMPLEMENTATION_ROADMAP.md` 📋
+- **Project Management Module**: `docs/PROJECT_MANAGEMENT_MODULE_SPEC.md` 🏗️
+- **Team Labor Division**: `docs/TEAM_LABOR_DIVISION.md` 👥
+- **Immediate Tasks**: `docs/IMMEDIATE_TASKS.md` 🚀
 - **File Structure Guidelines**: `docs/claude.md`
 - **Database Schema**: `docs/SCHEMA.md` 
 - **Collaboration Guide**: `docs/COLLABORATION.md`
@@ -70,5 +74,31 @@ npm run lint        # Run linting
 - **Frontend**: Next.js 15, React 19, Tailwind CSS
 - **Backend**: Supabase, PostgreSQL
 - **State Management**: React Query
+- **Real-time**: Supabase Realtime subscriptions
 - **Charts**: Nivo, Recharts
 - **UI Components**: Headless UI, Heroicons
+
+## ✨ Key Features
+
+### 🏗️ Project Management Hierarchy (NEW!)
+- **4-Level Structure**: Project → Phases → Steps → Tasks with complete visualization
+- **Status Tracking**: Color-coded progress indicators across all hierarchy levels  
+- **Phase Types**: Planning, IP, WIP, Handover, HOC, FAC with specialized workflows
+- **Smart Progress**: Automatic progress calculation and rollup across project levels
+- **Expandable Views**: Collapsible hierarchy for optimal screen real estate
+
+### ⚡ Real-time Collaboration
+- **Live Updates**: Project changes sync instantly across all connected users
+- **Presence Tracking**: See who's viewing/editing projects and tasks in real-time
+- **Smart Notifications**: Real-time alerts for task assignments, phase progressions, and comments
+- **Collaborative Editing**: Conflict prevention when multiple users edit the same items
+- **Automatic Reconnection**: Robust connection handling with exponential backoff
+
+### 🗃️ Data Management
+- **Soft Delete System**: Archive/restore functionality with full audit trails
+  - Safe deletion with recovery options across all entity types
+  - Bulk archive/restore operations with 100-record safety limits
+  - Comprehensive test suite with 9 test scenarios and performance benchmarking
+  - Query filtering utilities: `excludeArchived()`, `onlyArchived()`, `includeArchived()`
+- **Performance Optimized**: <50ms response times with React Query caching
+- **Audit Logging**: Comprehensive change tracking across all operations

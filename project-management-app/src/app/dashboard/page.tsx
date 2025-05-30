@@ -38,12 +38,53 @@ export default function DashboardPage() {
         </p>
       </div>
       
+      {/* New Feature Announcement */}
+      <div className="mb-8 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+        <div className="flex items-center mb-4">
+          <div className="flex-shrink-0">
+            <svg className="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-medium text-blue-800 dark:text-blue-200">
+              🚀 New: Complete Project Hierarchy System
+            </h3>
+            <p className="text-blue-700 dark:text-blue-300 mt-1">
+              Experience the new 4-level project structure: Project → Phases → Steps → Tasks with real-time progress tracking, status indicators, and expandable hierarchy views.
+            </p>
+          </div>
+        </div>
+        <div className="flex space-x-4">
+          <Link 
+            href="/projects?view=management"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Try New Project View
+          </Link>
+          <a 
+            href="#features" 
+            className="inline-flex items-center px-4 py-2 border border-blue-300 dark:border-blue-600 text-sm font-medium rounded-md text-blue-700 dark:text-blue-200 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700"
+          >
+            Learn More
+          </a>
+        </div>
+      </div>
+
       {/* Feature Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Project Overview Card */}
-        <Link href="/projects" className="bg-[#f0f5f9] dark:bg-[#00406a] p-6 rounded-lg shadow-sm border border-[#e0eaf3] dark:border-[#00527b] hover:shadow-md transition-shadow cursor-pointer">
-          <h3 className="text-lg font-medium text-[#003049] dark:text-white mb-2">Project overview, stats, and quick links</h3>
-          <p className="text-gray-900 dark:text-gray-100 text-sm mb-4">Get a comprehensive view of your projects at a glance.</p>
+        {/* Project Overview Card - Enhanced */}
+        <Link href="/projects?view=management" className="bg-[#f0f5f9] dark:bg-[#00406a] p-6 rounded-lg shadow-sm border border-[#e0eaf3] dark:border-[#00527b] hover:shadow-md transition-shadow cursor-pointer">
+          <div className="flex items-center mb-2">
+            <svg className="h-5 w-5 text-[#003049] dark:text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 className="text-lg font-medium text-[#003049] dark:text-white">Project Hierarchy ✨ NEW</h3>
+          </div>
+          <p className="text-gray-900 dark:text-gray-100 text-sm mb-4">Manage projects with complete 4-level hierarchy, progress tracking, and expandable views.</p>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+            Enhanced
+          </span>
         </Link>
         
         {/* Visualization Card */}

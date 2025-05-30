@@ -9,7 +9,7 @@ export enum FeatureFlag {
 // Simple feature flags implementation that doesn't require context
 // Feature flags can be enabled or disabled as needed
 const featureFlags: Record<FeatureFlag, boolean> = {
-  [FeatureFlag.USE_ERROR_BOUNDARIES]: false,
+  [FeatureFlag.USE_ERROR_BOUNDARIES]: true,  // Now enabled
   [FeatureFlag.PERFORMANCE_MONITORING]: true,
   [FeatureFlag.ANALYTICS_DASHBOARD]: true, // Enabled Analytics Dashboard
 };

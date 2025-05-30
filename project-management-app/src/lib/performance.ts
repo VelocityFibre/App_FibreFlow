@@ -110,6 +110,7 @@ export function measureAsync<T>(
       resolve(result);
     } catch (error) {
       perfTracker.end(operation);
+      console.error(`Error in ${operation}:`, error);
       reject(error);
     }
   });

@@ -1,20 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { createAuditLog, AuditAction, AuditResourceType } from "./auditLogger";
 
-// --- PHASES (master list) --- //
-export async function getPhases() {
-  const { data, error } = await supabase.from("phases").select("*").order("order_no");
-  if (error) throw error;
-  return data;
-}
-
-export async function createPhase(phase: { name: string; description?: string; order_no?: number }) {
-  const { data, error } = await supabase.from("phases").insert([phase]).select();
-  if (error) throw error;
-  await createAuditLog(AuditAction.CREATE, AuditResourceType.PHASE, data[0].id, { phase });
-  return data[0];
-}
-
+// Type definitions
 interface Phase {
   id: string;
   name: string;
@@ -22,14 +9,54 @@ interface Phase {
   order_no?: number;
 }
 
-export async function updatePhase(id: string, updates: Partial<Phase>) {
-  const { data, error } = await supabase.from("phases").update(updates).eq("id", id).select();
-  if (error) throw error;
-  await createAuditLog(AuditAction.UPDATE, AuditResourceType.PHASE, id, { updates });
-  return data[0];
+interface ProjectPhase {
+  id: string;
+  project_id: string;
+  phase_id: string;
+  status: string;
+  assigned_to?: string | null;
+  order_index?: number;
 }
 
-export async function deletePhase(id: string) {
+interface Task {
+  id: string;
+  name: string;
+  description?: string;
+  phase_id?: string;
+}
+
+interface ProjectTask {
+  id: string;
+  project_phase_id: string;
+  task_id: string;
+  status: string;
+  assigned_to?: string | null;
+}
+
+// --- PHASES (master list) --- //
+export async function getPhases(): Promise<Phase[]> {
+  const { data, error } = await supabase.from("phases").select("*").order("order_no");
+  if (error) throw error;
+  return data || [];
+}
+
+export async function createPhase(phase: { name: string; description?: string; order_no?: number }): Promise<Phase> {
+  const { data, error } = await supabase.from("phases").insert([phase]).select();
+  if (error) throw error;
+  if (!data || data.length === 0) throw new Error('Failed to create phase');
+  await createAuditLog(AuditAction.CREATE, AuditResourceType.PHASE, data[0].id, { phase });
+  return data[0] as Phase;
+}
+
+export async function updatePhase(id: string, updates: Partial<Phase>): Promise<Phase> {
+  const { data, error } = await supabase.from("phases").update(updates).eq("id", id).select();
+  if (error) throw error;
+  if (!data || data.length === 0) throw new Error('Failed to update phase');
+  await createAuditLog(AuditAction.UPDATE, AuditResourceType.PHASE, id, { updates });
+  return data[0] as Phase;
+}
+
+export async function deletePhase(id: string): Promise<void> {
   const { error } = await supabase.from("phases").delete().eq("id", id);
   if (error) throw error;
   await createAuditLog(AuditAction.DELETE, AuditResourceType.PHASE, id, {});

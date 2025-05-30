@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { FeatureFlag, useFeatureFlags } from '@/lib/feature-flags';
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -61,8 +61,7 @@ class ErrorBoundaryComponent extends Component<ErrorBoundaryProps, ErrorBoundary
 
 // Wrapper component that conditionally applies the ErrorBoundary based on feature flag
 export function ErrorBoundary({ children, fallback, onError }: ErrorBoundaryProps): JSX.Element {
-  const { isEnabled } = useFeatureFlags();
-  const useErrorBoundaries = isEnabled(FeatureFlag.USE_ERROR_BOUNDARIES);
+  const useErrorBoundaries = isFeatureEnabled(FeatureFlag.USE_ERROR_BOUNDARIES);
 
   if (useErrorBoundaries) {
     return (

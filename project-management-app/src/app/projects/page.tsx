@@ -1,382 +1,28 @@
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
-import { createAuditLog, AuditAction, AuditResourceType } from "@/lib/auditLogger";
-import ProjectAssigneeDropdown from "@/components/ProjectAssigneeDropdown";
-import { autoAssignFirstPhaseAndTasks } from "@/lib/projectPhaseUtils";
-import { testSupabaseConnection, testProjectsTable } from "@/lib/supabaseTest";
 import ModuleOverviewLayout from "@/components/ModuleOverviewLayout";
 import ModuleOverviewCard from "@/components/ModuleOverviewCard";
-import ActionButton from "@/components/ActionButton";
-import { FiFolder, FiCalendar, FiAlertCircle } from 'react-icons/fi';
-
-// Helper function to generate UUID v4
-function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-interface Project {
-  id: string;
-  name: string;
-  customer_id?: string;
-  created_at?: string;
-  start_date?: string;
-  location_id?: string;
-  province?: string;
-  region?: string;
-  new_customers?: Customer;
-}
-
-interface Location {
-  id: string;
-  location_name: string;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-  address_line1?: string;
-  address_line2?: string;
-  city?: string;
-  postal_code?: string;
-  email?: string;
-}
+import { ProjectList } from "@/components/ProjectHierarchy";
+import { FiFolder, FiCalendar, FiAlertCircle, FiPlus } from 'react-icons/fi';
+import Link from 'next/link';
 
 function ProjectsContent() {
-  // This component uses useSearchParams, so it needs to be wrapped in Suspense
   const searchParams = useSearchParams();
   const customerId = searchParams.get("customer");
   const view = searchParams.get("view");
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newProject, setNewProject] = useState<Project>({
-    id: "",
-    name: "",
-    province: "",
-    region: "",
-    customer_id: customerId || "",
-    start_date: "",
-    location_id: "",
-  });
-
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [projectManager, setProjectManager] = useState<string | null>(null);
-  const [taskAssignee, setTaskAssignee] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<{success: boolean, message: string} | null>(null);
-
-  // Define fetch functions with useCallback to prevent infinite loops
-  const fetchCustomers = React.useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("new_customers")
-        .select("*")
-        .order("name");
-      if (error) {
-        console.error("Error fetching customers:", error);
-      } else {
-        setCustomers(data || []);
-      }
-    } catch (error) {
-      console.error("Unexpected error in fetchCustomers:", error);
-    }
-  }, []);
-
-  const fetchLocations = React.useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("locations")
-        .select("*")
-        .order("location_name");
-      if (error) {
-        console.error("Error fetching locations:", error);
-      } else {
-        setLocations(data || []);
-      }
-    } catch (error) {
-      console.error("Unexpected error in fetchLocations:", error);
-    }
-  }, []);
-
-  const fetchData = React.useCallback(async () => {
-    setLoading(true);
-    console.log('Fetching data with Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-
-    try {
-      // Fetch customer if customerId is provided
-      if (customerId) {
-        const { data: customerData, error: customerError } = await supabase
-          .from("new_customers")
-          .select("*")
-          .eq("id", customerId)
-          .single();
-
-        if (customerError) {
-          console.error("Error fetching customer:", customerError);
-        } else {
-          setCustomer(customerData);
-        }
-
-        // Fetch projects for this customer
-        const { data: projectsData, error: projectsError } = await supabase
-          .from("projects")
-          .select("*")
-          .eq("customer_id", customerId);
-
-        if (projectsError) {
-          console.error("Error fetching projects:", projectsError);
-        } else {
-          setProjects(projectsData || []);
-        }
-      } else {
-        // Fetch all projects - with detailed error handling
-        console.log('Attempting to fetch all projects...');
-        const { data: projectsData, error: projectsError } = await supabase
-          .from("projects")
-          .select("*");
-
-        if (projectsError) {
-          console.error("Error fetching all projects:", JSON.stringify(projectsError));
-          alert(`Error fetching projects: ${JSON.stringify(projectsError)}`);
-        } else {
-          console.log('Projects data received:', projectsData);
-          // Map the data to match the expected Project interface
-          const formattedProjects = (projectsData || []).map(project => ({
-            id: project.id,
-            name: project.project_name || 'Unnamed Project', // Use project_name as the name field
-            customer_id: project.customer_id,
-            created_at: project.created_at,
-            start_date: project.start_date,
-            location_id: project.location_id,
-            province: project.province || '',
-            region: project.region || '',
-            new_customers: project.new_customers
-          }));
-          setProjects(formattedProjects);
-        }
-      }
-    } catch (error) {
-      console.error("Unexpected error in fetchData:", error);
-      alert(`Unexpected error in fetchData: ${JSON.stringify(error)}`);
-    } finally {
-      setLoading(false);
-    }
-  }, [customerId]);
-  
-  useEffect(() => {
-    // Test Supabase connection first
-    testConnection();
-    // Then fetch data
-    fetchData();
-    fetchLocations();
-    fetchCustomers();
-  }, [fetchData, fetchLocations, fetchCustomers]);
-  
-  async function testConnection() {
-    // Test general Supabase connection
-    const connectionTest = await testSupabaseConnection();
-    if (!connectionTest.success) {
-      setConnectionStatus({
-        success: false,
-        message: `Supabase connection failed: ${JSON.stringify(connectionTest.error)}`
-      });
-      return;
-    }
-    
-    // Test projects table specifically
-    const projectsTest = await testProjectsTable();
-    if (!projectsTest.success) {
-      setConnectionStatus({
-        success: false,
-        message: `Projects table test failed: ${JSON.stringify(projectsTest.error)}`
-      });
-      return;
-    }
-    
-    setConnectionStatus({
-      success: true,
-      message: 'Connection to Supabase and projects table successful'
-    });
-  }
-
-  async function handleAddProject() {
-    console.log('Current form state:', { newProject, projectManager, taskAssignee });
-    
-    if (!newProject.name) {
-      alert("Project name is required");
-      return;
-    }
-    
-    // TEMPORARY WORKAROUND: Force a default project manager value if none is selected
-    let effectiveProjectManager = projectManager;
-    if (projectManager === null || projectManager === undefined || isNaN(Number(projectManager))) {
-      console.log('Setting default project manager as workaround');
-      // Set a default value of 1 as a temporary workaround
-      effectiveProjectManager = 1;
-      // Set the state for future reference
-      setProjectManager(1);
-    }
-    
-    // Log the project manager being used
-    console.log('Using project manager:', effectiveProjectManager);
-
-    try {
-      // Create a clean payload without the id field (should be auto-generated by the database)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...projectData } = newProject;
-
-      // Remove empty location_id to prevent UUID validation errors
-      if (!projectData.location_id) {
-        delete projectData.location_id;
-      }
-
-      // Remove empty customer_id if not set
-      if (!projectData.customer_id) {
-        delete projectData.customer_id;
-      }
-
-      // Remove empty start_date if not set
-      if (!projectData.start_date) {
-        delete projectData.start_date;
-      }
-
-      console.log("Attempting to add project with clean payload:", projectData);
-      // Rename fields to match the projects table schema
-      // The projects table uses project_name instead of name
-      // Generate a UUID for the id field
-      const projectsPayload = {
-        id: uuidv4(), // Generate a UUID for the id field
-        project_name: projectData.name,
-        customer_id: projectData.customer_id,
-        province: projectData.province,
-        region: projectData.region,
-        start_date: projectData.start_date,
-        location_id: projectData.location_id,
-      };
-      
-      // Create a clean payload with proper typing
-      interface ProjectPayload {
-        id: string; // Required id field
-        project_name: string;
-        // Make customer_id optional to handle schema differences
-        customer_id?: string;
-        province?: string;
-        region?: string;
-        start_date?: string;
-        location_id?: string;
-        [key: string]: string | undefined; // More specific index signature
-      }
-      
-      // Convert to properly typed object and clean up empty values
-      const cleanPayload: ProjectPayload = { ...projectsPayload };
-      Object.keys(cleanPayload).forEach(key => {
-        if (cleanPayload[key] === undefined || cleanPayload[key] === null || cleanPayload[key] === '') {
-          delete cleanPayload[key];
-        }
-      });
-      
-      // IMPORTANT: Remove customer_id if it's causing schema issues
-      // This is a temporary workaround to allow project creation
-      delete cleanPayload.customer_id;
-      
-      console.log('Final project payload:', cleanPayload);
-      
-      const { data, error } = await supabase
-        .from("projects")
-        .insert([cleanPayload])
-        .select();
-
-      if (error) {
-        console.error("Error adding project:", error);
-        alert(`Failed to add project: ${error.message}`);
-        return;
-      }
-
-      console.log("Project added successfully:", data);
-      // --- AUTOMATE PHASE & TASK ASSIGNMENT ---
-      if (data && data.length > 0) {
-        try {
-          await autoAssignFirstPhaseAndTasks({
-            projectId: data[0].id,
-            phaseAssigneeId: effectiveProjectManager, // Already a string now
-            taskAssigneeId: taskAssignee !== null ? taskAssignee : effectiveProjectManager, // Already strings now
-          });
-        } catch (err: unknown) {
-          console.error("Error auto-assigning phase/tasks:", err);
-          let errMsg = '';
-          if (typeof err === 'object' && err && 'message' in err) {
-            errMsg = (err as { message?: string }).message || '';
-          } else {
-            errMsg = JSON.stringify(err);
-          }
-          
-          // Don't show error for "No phases found" - this is expected if phases haven't been set up yet
-          if (errMsg === 'No phases found') {
-            console.log('No phases found for auto-assignment - this is normal if phases have not been created yet');
-          } else {
-            alert("Project created but failed to assign initial phase/tasks: " + errMsg);
-          }
-        }
-      }
-      // Create audit log entry
-      if (data && data.length > 0) {
-        const projectDetails = {
-          projectName: data[0].name,
-          customerId: data[0].customer_id,
-          startDate: data[0].start_date,
-          locationId: data[0].location_id,
-        };
-
-        await createAuditLog(
-          AuditAction.CREATE,
-          AuditResourceType.PROJECT,
-          data[0].id,
-          projectDetails
-        );
-      }
-
-      alert("Project added successfully!");
-
-      // Reset form with a slight delay to ensure UI updates properly
-      setTimeout(() => {
-        setNewProject({
-          id: "",
-          name: "",
-          province: "",
-          region: "",
-          customer_id: customerId || "",
-          start_date: "",
-          location_id: "",
-        });
-      }, 100);
-
-      // Refresh data
-      fetchData();
-    } catch (error) {
-      console.error("Unexpected error in handleAddProject:", error);
-      alert(`An unexpected error occurred: ${error}`);
-    }
-  }
-
-  // If we're on the main projects page (not customer-specific) and no view is specified, show the overview layout
-  if (!customer && !view) {
+  // Show overview if no specific view is requested
+  if (!view) {
     return (
       <ModuleOverviewLayout 
         title="Projects" 
         description="Manage and track all your fibre deployment projects"
-        actions={<ActionButton label="Test Connection" variant="outline" onClick={testConnection} />}
       >
         <ModuleOverviewCard
           title="Project Management"
-          description="Manage your projects, track progress, and assign resources."
-          actionLabel="Go to Management"
+          description="Manage your projects, track progress, and assign resources using the new hierarchy system."
+          actionLabel="View Projects"
           actionLink="/projects?view=management"
           icon={<FiFolder size={24} />}
         />
@@ -397,288 +43,73 @@ function ProjectsContent() {
       </ModuleOverviewLayout>
     );
   }
-  
+
+  // Show project management view
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {customer ? `Projects for ${customer.name}` : "Projects"}
-          </h2>
-          {customer && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Manage projects for {customer.name}
-            </p>
-          )}
-        </div>
-        <div className="flex space-x-3">
-          <ActionButton
-            label="Test Connection"
-            variant="outline"
-            onClick={testConnection}
-          />
-        </div>
-      </div>
-      
-      {/* Connection status message */}
-      {connectionStatus && (
-        <div className={`mb-4 p-3 rounded ${connectionStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {connectionStatus.message}
-        </div>
-      )}
-
-      {customer && (
-        <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800">
-          <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">
-            Customer Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
-              <p className="text-gray-900 dark:text-white">{customer.name}</p>
-            </div>
-            {customer.address_line1 && (
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Address</p>
-                <p className="text-gray-900 dark:text-white">
-                  {customer.address_line1}
-                  {customer.address_line2 && <span>, {customer.address_line2}</span>}
-                  {customer.city && <span>, {customer.city}</span>}
-                  {customer.postal_code && <span> {customer.postal_code}</span>}
-                </p>
-              </div>
-            )}
-            {customer.email && (
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                <p className="text-gray-900 dark:text-white">{customer.email}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Projects List */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-6">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            {projects.length} {projects.length === 1 ? "Project" : "Projects"}
-          </h3>
-          <Link 
-            href="#"
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            onClick={(e) => {
-              e.preventDefault();
-              // Open modal or expand form
-              // For now, we'll just scroll to the form
-              document.getElementById('add-project-form')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            Add Project
-          </Link>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Project Management
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Manage your fiber optic installation projects with complete hierarchy visibility
+          </p>
         </div>
         
-        {loading ? (
-          <div className="p-6 text-center">
-            <p className="text-gray-500 dark:text-gray-400">Loading projects...</p>
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="p-6 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No projects found</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              Add a new project to get started
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Project Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Start Date
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Region
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {projects.map((project) => (
-                  <tr key={project.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{project.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {project.region || 'Not set'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Link 
-                        href={`/projects/${project.id}`}
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                      >
-                        View
-                      </Link>
-                      <Link 
-                        href={`/projects/${project.id}/edit`}
-                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                      >
-                        Edit
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {/* Quick Actions */}
+        <div className="flex space-x-3">
+          <Link
+            href="/projects/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <FiPlus className="mr-2 h-4 w-4" />
+            New Project
+          </Link>
+        </div>
       </div>
 
-      {/* Add Project Form */}
-      <div id="add-project-form" className="bg-[#f0f5f9] dark:bg-[#00406a] shadow rounded-lg overflow-hidden">
-        <div className="bg-[#f0f5f9] dark:bg-[#00406a] rounded-lg shadow-sm border border-[#e0eaf3] dark:border-[#00527b] p-6">
-          <h3 className="text-lg font-medium text-[#003049] dark:text-white mb-4">Add New Project</h3>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="project-name" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Project Name
-              </label>
-              <input
-                type="text"
-                id="project-name"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-[#003049] focus:border-[#003049] sm:text-sm"
-                value={newProject.name}
-                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Start Date
-              </label>
-              <input
-                type="date"
-                id="start-date"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-[#003049] focus:border-[#003049] sm:text-sm"
-                value={newProject.start_date || ''}
-                onChange={(e) => setNewProject({ ...newProject, start_date: e.target.value })}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="province" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Province
-              </label>
-              <input
-                type="text"
-                id="province"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-[#003049] focus:border-[#003049] sm:text-sm"
-                value={newProject.province || ''}
-                onChange={(e) => setNewProject({ ...newProject, province: e.target.value })}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="region" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Region
-              </label>
-              <input
-                type="text"
-                id="region"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-[#003049] focus:border-[#003049] sm:text-sm"
-                value={newProject.region || ''}
-                onChange={(e) => setNewProject({ ...newProject, region: e.target.value })}
-              />
-            </div>
-            
-            {!customerId && (
-              <div>
-                <label htmlFor="customer" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Customer
-                </label>
-                <select
-                  id="customer"
-                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-[#003049] focus:border-[#003049] sm:text-sm"
-                  value={newProject.customer_id || ''}
-                  onChange={(e) => setNewProject({ ...newProject, customer_id: e.target.value })}
-                >
-                  <option value="">Select Customer</option>
-                  {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Location
-              </label>
-              <select
-                id="location"
-                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-[#003049] focus:border-[#003049] sm:text-sm"
-                value={newProject.location_id || ''}
-                onChange={(e) => setNewProject({ ...newProject, location_id: e.target.value })}
-              >
-                <option value="">Select Location</option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.location_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="project-manager" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Project Manager
-              </label>
-              <ProjectAssigneeDropdown
-                value={projectManager}
-                onChange={setProjectManager}
-                label="Select Project Manager"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="task-assignee" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Default Task Assignee
-              </label>
-              <ProjectAssigneeDropdown
-                value={taskAssignee}
-                onChange={setTaskAssignee}
-                label="Select Task Assignee"
-              />
-            </div>
+      {/* Feature Banner */}
+      <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <FiFolder className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
-          
-          <div className="mt-6">
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#003049] hover:bg-[#00406a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003049]"
-              onClick={handleAddProject}
-            >
-              Add Project
-            </button>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              🚀 New Hierarchy System
+            </h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+              Click on any project card to expand and view the complete Project → Phases → Steps → Tasks hierarchy with real-time progress tracking.
+            </p>
           </div>
         </div>
+      </div>
+
+      {/* Project List Component */}
+      <div className="space-y-6">
+        <ProjectList 
+          customerId={customerId || undefined}
+          showArchived={false}
+        />
+      </div>
+
+      {/* Archived Projects Section */}
+      <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Archived Projects
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Projects that have been archived but can be restored
+          </p>
+        </div>
+        
+        <ProjectList 
+          customerId={customerId || undefined}
+          showArchived={true}
+        />
       </div>
     </div>
   );
@@ -686,7 +117,12 @@ function ProjectsContent() {
 
 export default function ProjectsPage() {
   return (
-    <Suspense fallback={<div className="p-6">Loading projects...</div>}>
+    <Suspense fallback={
+      <div className="p-6 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600 dark:text-gray-400">Loading projects...</span>
+      </div>
+    }>
       <ProjectsContent />
     </Suspense>
   );
