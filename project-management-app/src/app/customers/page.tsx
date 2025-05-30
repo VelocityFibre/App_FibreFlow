@@ -1,8 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import ModuleOverviewLayout from "@/components/ModuleOverviewLayout";
+import ModuleOverviewCard from "@/components/ModuleOverviewCard";
+import ActionButton from "@/components/ActionButton";
+import { FiUsers, FiUserPlus, FiClipboard } from 'react-icons/fi';
 
-export default function CustomersPage() {
+function CustomersContent() {
+  const searchParams = useSearchParams();
+  const view = searchParams.get("view");
   const [customers, setCustomers] = useState<any[]>([]);
   const [editing, setEditing] = useState<string|null>(null);
   const [newCustomer, setNewCustomer] = useState({ 
@@ -63,9 +71,59 @@ export default function CustomersPage() {
     setCustomers((prev) => prev.map((c) => c.id === id ? { ...c, [field]: value } : c));
   }
 
+  // If we're on the main customers page and no view is specified, show the overview layout
+  if (!view) {
+    return (
+      <ModuleOverviewLayout 
+        title="Customers" 
+        description="Manage your customer relationships and information"
+        actions={<ActionButton label="Add Customer" variant="outline" onClick={() => window.location.href = "/customers?view=add"} />}
+      >
+        <ModuleOverviewCard
+          title="Customer Management"
+          description="View and manage your customer database."
+          actionLabel="View Customers"
+          actionLink="/customers?view=management"
+          icon={<FiUsers size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Add New Customer"
+          description="Register new customers in your database."
+          actionLabel="Add Customer"
+          actionLink="/customers?view=add"
+          icon={<FiUserPlus size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Customer Reports"
+          description="Generate and view reports on customer data."
+          actionLabel="View Reports"
+          actionLink="/customers?view=reports"
+          icon={<FiClipboard size={24} />}
+        />
+      </ModuleOverviewLayout>
+    );
+  }
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Customers</h2>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Customers</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {view === "management" ? "Manage your customer database" : 
+             view === "add" ? "Add new customers to your database" : 
+             "Customer information and management"}
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <ActionButton
+            label="Back to Overview"
+            variant="outline"
+            onClick={() => window.location.href = "/customers"}
+          />
+        </div>
+      </div>
+      
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <input
@@ -238,5 +296,13 @@ export default function CustomersPage() {
         </table>
       )}
     </div>
+  );
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading customers...</div>}>
+      <CustomersContent />
+    </Suspense>
   );
 }

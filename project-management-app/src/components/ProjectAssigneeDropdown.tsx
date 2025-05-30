@@ -67,11 +67,11 @@ export default function ProjectAssigneeDropdown({ value, onChange, className = '
     <select
       value={stringValue}
       onChange={handleChange}
-      className={`${className} border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
+      className={`${className} border border-gray-300 rounded px-3 py-2 w-full bg-white text-gray-900 focus:outline-none focus:ring-primary focus:border-primary`}
     >
       <option value="">{label}</option>
       {staff.map((member) => (
-        <option key={member.id} value={String(member.id)} className="text-gray-900 dark:text-white bg-white dark:bg-gray-700">
+        <option key={member.id} value={String(member.id)} className="text-gray-900 bg-white">
           {member.name}
         </option>
       ))}

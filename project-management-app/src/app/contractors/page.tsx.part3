@@ -1,0 +1,60 @@
+  // If we're on the main contractors page and no view is specified, show the overview layout
+  if (!view) {
+    return (
+      <ModuleOverviewLayout 
+        title="Contractors" 
+        description="Onboard and manage your contractors and subcontractors"
+        actions={<ActionButton label="Add Contractor" variant="outline" onClick={() => window.location.href = "/contractors?view=add"} />}
+      >
+        <ModuleOverviewCard
+          title="Contractor Management"
+          description="View and manage your contractor database."
+          actionLabel="View Contractors"
+          actionLink="/contractors?view=management"
+          icon={<BsBuilding size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Onboard Contractor"
+          description="Register new contractors with comprehensive information."
+          actionLabel="Start Onboarding"
+          actionLink="/contractors?view=add"
+          icon={<FiUserPlus size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Document Management"
+          description="Manage contractor documentation and compliance."
+          actionLabel="View Documents"
+          actionLink="/contractors?view=documents"
+          icon={<BsFileEarmarkText size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Contractor Reports"
+          description="Generate and view reports on contractor performance."
+          actionLabel="View Reports"
+          actionLink="/contractors?view=reports"
+          icon={<FiClipboard size={24} />}
+        />
+      </ModuleOverviewLayout>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Contractors</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {view === "management" ? "Manage your contractor database" : 
+             view === "add" ? "Onboard new contractors" : 
+             view === "documents" ? "Manage contractor documentation" :
+             "Contractor information and management"}
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <ActionButton
+            label="Back to Overview"
+            variant="outline"
+            onClick={() => window.location.href = "/contractors"}
+          />
+        </div>
+      </div>

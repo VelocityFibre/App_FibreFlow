@@ -44,6 +44,10 @@ export default function PhasesTasksAdmin() {
     description: ""
   });
   
+  // Setup states for quick setup functionality
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [setupResult, setSetupResult] = useState<string | null>(null);
+  
   useEffect(() => {
     fetchPhasesAndTasks();
   }, []);
@@ -171,8 +175,6 @@ export default function PhasesTasksAdmin() {
     }
   }
   
-  // Function to create tasks has been removed
-  
   async function handleDeletePhase(id: string) {
     if (!confirm("Are you sure you want to delete this phase? This will also delete all associated tasks.")) {
       return;
@@ -237,6 +239,49 @@ export default function PhasesTasksAdmin() {
     }
   }
   
+  // Function to set up default phases and tasks
+  async function setupDefaultPhasesAndTasks() {
+    setSetupLoading(true);
+    setSetupResult(null);
+    
+    try {
+      // Default phases data
+      const defaultPhases = [
+        { name: "Planning", description: "Initial project planning phase", order_no: 1 },
+        { name: "Design", description: "Network design and architecture", order_no: 2 },
+        { name: "Implementation", description: "Physical installation and configuration", order_no: 3 },
+        { name: "Testing", description: "Verification and quality assurance", order_no: 4 },
+        { name: "Handover", description: "Client handover and documentation", order_no: 5 }
+      ];
+      
+      // Insert default phases
+      const { data: phasesData, error: phasesError } = await supabase
+        .from("phases")
+        .insert(defaultPhases)
+        .select();
+      
+      if (phasesError) {
+        throw new Error(`Error creating phases: ${phasesError.message}`);
+      }
+      
+      // Default tasks
+      const defaultTasks = [
+        { title: "Site Survey", description: "Conduct initial site survey", status: "planning" },
+        { title: "Requirements Gathering", description: "Document client requirements", status: "planning" },
+        { title: "Network Design", description: "Create network architecture design", status: "planning" },
+        { title: "Equipment Procurement", description: "Order necessary equipment", status: "planning" },
+        { title: "Cable Installation", description: "Install fiber optic cables", status: "planning" },
+        { title: "Equipment Installation", description: "Install networking equipment", status: "planning" },
+        { title: "Configuration", description: "Configure network devices", status: "planning" },
+        { title: "Testing", description: "Perform connectivity and performance tests", status: "planning" },
+        { title: "Documentation", description: "Prepare handover documentation", status: "planning" },
+        { title: "Client Training", description: "Train client staff on system usage", status: "planning" }
+      ];
+      
+      // Insert default tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
+        .insert(defaultTasks)
         .select();
       
       if (tasksError) {
@@ -249,7 +294,7 @@ export default function PhasesTasksAdmin() {
           AuditAction.CREATE,
           AuditResourceType.PROJECT_TASK,
           task.id.toString(),
-          { title: task.title, phase_id: task.phase_id }
+          { title: task.title }
         );
       }
       
@@ -260,13 +305,34 @@ export default function PhasesTasksAdmin() {
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === 'object' && error && 'message' in error) {
-        errorMessage = String((error as { message?: string }).message);
+        errorMessage = (error as { message: string }).message;
       } else if (typeof error === 'string') {
         errorMessage = error;
       }
       
       setSetupResult(`Error: ${errorMessage}`);
       console.error("Error setting up phases:", error);
+    } finally {
+      setSetupLoading(false);
+    }
+  }
+  
+  // Placeholder function for the setup button in the UI
+  async function setupDefaultPhases() {
+    await setupDefaultPhasesAndTasks();
+  }
+  
+  // Placeholder function for the create sequential tasks button in the UI
+  async function createPhaseOneSequentialTasks() {
+    setSetupLoading(true);
+    setSetupResult(null);
+    
+    try {
+      // Implementation would go here
+      setSetupResult("Sequential tasks creation feature is coming soon.");
+    } catch (error) {
+      setSetupResult("Error: Failed to create sequential tasks.");
+      console.error("Error creating sequential tasks:", error);
     } finally {
       setSetupLoading(false);
     }

@@ -1,0 +1,86 @@
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                        {editing === contractor.id ? (
+                          <input
+                            type="text"
+                            value={Array.isArray(contractor.type_of_services_offered) ? contractor.type_of_services_offered.join(", ") : ""}
+                            onChange={e => handleEditField(contractor.id, "type_of_services_offered", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                            className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        ) : (
+                          Array.isArray(contractor.type_of_services_offered) ? contractor.type_of_services_offered.join(", ") : ""
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
+                        {editing === contractor.id ? (
+                          <input
+                            type="text"
+                            value={contractor.contractor_performance}
+                            onChange={e => handleEditField(contractor.id, "contractor_performance", e.target.value)}
+                            className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        ) : (
+                          contractor.contractor_performance
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {editing === contractor.id ? (
+                          <div className="flex space-x-2">
+                            <button 
+                              className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                              onClick={() => handleSave(contractor.id)}
+                            >
+                              Save
+                            </button>
+                            <button 
+                              className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                              onClick={() => setEditing(null)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                            onClick={() => setEditing(contractor.id)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+      
+      {view === "documents" && (
+        <div className="text-center py-10">
+          <p className="text-gray-500 dark:text-gray-400">Document management coming soon</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            This feature is under development
+          </p>
+        </div>
+      )}
+      
+      {view === "reports" && (
+        <div className="text-center py-10">
+          <p className="text-gray-500 dark:text-gray-400">Contractor reports coming soon</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+            This feature is under development
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ContractorsPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading contractors...</div>}>
+      <ContractorsContent />
+    </Suspense>
+  );
+}

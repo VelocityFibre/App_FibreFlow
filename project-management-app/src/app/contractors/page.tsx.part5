@@ -1,0 +1,94 @@
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">B-BBEE Level</label>
+                <select
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={newContractor.bee_level}
+                  onChange={e => setNewContractor({ ...newContractor, bee_level: e.target.value })}
+                >
+                  <option value="">Select B-BBEE Level</option>
+                  <option value="Level 1">Level 1 (≥ 100 points)</option>
+                  <option value="Level 2">Level 2 (≥ 95 points)</option>
+                  <option value="Level 3">Level 3 (≥ 90 points)</option>
+                  <option value="Level 4">Level 4 (≥ 80 points)</option>
+                  <option value="Level 5">Level 5 (≥ 75 points)</option>
+                  <option value="Level 6">Level 6 (≥ 70 points)</option>
+                  <option value="Level 7">Level 7 (≥ 55 points)</option>
+                  <option value="Level 8">Level 8 (≥ 40 points)</option>
+                  <option value="Non-Compliant">Non-Compliant (&lt; 40 points)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CIDB Rating (if applicable)</label>
+                <select
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={newContractor.cidb_rating || ""}
+                  onChange={e => setNewContractor({ ...newContractor, cidb_rating: e.target.value })}
+                >
+                  <option value="">Select CIDB Rating</option>
+                  <option value="1">Grade 1</option>
+                  <option value="2">Grade 2</option>
+                  <option value="3">Grade 3</option>
+                  <option value="4">Grade 4</option>
+                  <option value="5">Grade 5</option>
+                  <option value="6">Grade 6</option>
+                  <option value="7">Grade 7</option>
+                  <option value="8">Grade 8</option>
+                  <option value="9">Grade 9</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Services Offered *</label>
+                <input
+                  type="text"
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  placeholder="e.g. Trenching, Cable Installation, Fiber Splicing (comma separated)"
+                  value={Array.isArray(newContractor.type_of_services_offered) ? newContractor.type_of_services_offered.join(", ") : ""}
+                  onChange={e => setNewContractor({ ...newContractor, type_of_services_offered: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  required
+                />
+              </div>
+            </div>
+            
+            {/* Contact Details Section */}
+            <h4 className="text-md font-medium mb-4 text-gray-800 dark:text-gray-200 mt-8">Contact Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact Person *</label>
+                <input
+                  type="text"
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={newContractor.contact_person}
+                  onChange={e => setNewContractor({ ...newContractor, contact_person: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={newContractor.contact_email}
+                  onChange={e => setNewContractor({ ...newContractor, contact_email: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number *</label>
+                <input
+                  type="tel"
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={newContractor.contact_phone}
+                  onChange={e => setNewContractor({ ...newContractor, contact_phone: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Physical Address *</label>
+                <textarea
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={newContractor.physical_address}
+                  onChange={e => setNewContractor({ ...newContractor, physical_address: e.target.value })}
+                  required
+                  rows={3}
+                ></textarea>
+              </div>

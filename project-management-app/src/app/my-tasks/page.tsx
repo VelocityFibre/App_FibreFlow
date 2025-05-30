@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { createAuditLog, AuditAction, AuditResourceType } from "@/lib/auditLogger";
 import ProjectAssigneeDropdown from "@/components/ProjectAssigneeDropdown";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import ModuleOverviewLayout from "@/components/ModuleOverviewLayout";
+import ModuleOverviewCard from "@/components/ModuleOverviewCard";
+import ActionButton from "@/components/ActionButton";
+import { FiCheckSquare, FiClock, FiList, FiCalendar } from 'react-icons/fi';
 
 interface Task {
   id: string;
@@ -34,7 +39,9 @@ interface Task {
   };
 }
 
-export default function MyTasksPage() {
+function MyTasksContent() {
+  const searchParams = useSearchParams();
+  const view = searchParams.get("view");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -249,38 +256,84 @@ export default function MyTasksPage() {
     return <div className="p-6">Loading user information...</div>;
   }
 
+  // If we're on the main tasks page and no view is specified, show the overview layout
+  if (!view) {
+    return (
+      <ModuleOverviewLayout 
+        title="My Tasks" 
+        description="Manage and track your assigned tasks across all projects"
+        actions={<ActionButton label="View All Tasks" variant="outline" onClick={() => window.location.href = "/my-tasks?view=all"} />}
+      >
+        <ModuleOverviewCard
+          title="Active Tasks"
+          description="View and manage your currently active tasks."
+          actionLabel="View Active Tasks"
+          actionLink="/my-tasks?view=active"
+          icon={<FiClock size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Completed Tasks"
+          description="Review your completed tasks and achievements."
+          actionLabel="View Completed"
+          actionLink="/my-tasks?view=completed"
+          icon={<FiCheckSquare size={24} />}
+        />
+        <ModuleOverviewCard
+          title="Task Calendar"
+          description="View your tasks organized by due date."
+          actionLabel="Open Calendar"
+          actionLink="/my-tasks?view=calendar"
+          icon={<FiCalendar size={24} />}
+        />
+        <ModuleOverviewCard
+          title="All Tasks"
+          description="See a complete list of all your assigned tasks."
+          actionLabel="View All Tasks"
+          actionLink="/my-tasks?view=all"
+          icon={<FiList size={24} />}
+        />
+      </ModuleOverviewLayout>
+    );
+  }
+
+  // Filter tasks based on the view parameter
+  let filteredTasks = [...tasks];
+  if (view === "active") {
+    filteredTasks = tasks.filter(task => task.status !== "completed");
+  } else if (view === "completed") {
+    filteredTasks = tasks.filter(task => task.status === "completed");
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Tasks</h1>
-      
-      {newlyAssignedTask && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100">New Task Automatically Assigned!</h3>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                The next task in the sequence has been assigned to you. You can reassign it to another team member if needed.
-              </p>
-            </div>
-            <button
-              onClick={() => setNewlyAssignedTask(null)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
-            >
-              ✕
-            </button>
-          </div>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">My Tasks</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {view === "active" ? "Your currently active tasks" : 
+             view === "completed" ? "Your completed tasks" : 
+             view === "calendar" ? "Your task calendar" : 
+             "All tasks assigned to you"}
+          </p>
         </div>
-      )}
+        <div className="flex space-x-3">
+          <ActionButton
+            label="Back to Overview"
+            variant="outline"
+            onClick={() => window.location.href = "/my-tasks"}
+          />
+        </div>
+      </div>
       
       {loading ? (
         <div className="text-center py-10">Loading your tasks...</div>
-      ) : tasks.length === 0 ? (
+      ) : filteredTasks.length === 0 ? (
         <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <p className="text-lg text-gray-600 dark:text-gray-300">You don&apos;t have any tasks assigned to you.</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300">You don't have any tasks assigned to you.</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {tasks.map(task => (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredTasks.map(task => (
             <div 
               key={task.id} 
               className={`shadow-md rounded-lg p-6 border ${
@@ -369,5 +422,13 @@ export default function MyTasksPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MyTasksPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading tasks...</div>}>
+      <MyTasksContent />
+    </Suspense>
   );
 }

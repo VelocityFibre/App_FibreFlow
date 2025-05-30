@@ -1,11 +1,22 @@
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 
 // Enum for audit actions
 export enum AuditAction {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',
-  READ = 'read'
+  READ = 'read',
+  LOGIN = 'login',
+  LOGOUT = 'logout',
+  PASSWORD_RESET = 'password_reset',
+  ASSIGN = 'assign',
+  COMPLETE = 'complete',
+  APPROVE = 'approve',
+  REJECT = 'reject',
+  UPLOAD = 'upload',
+  DOWNLOAD = 'download',
+  EXPORT = 'export',
+  IMPORT = 'import'
 }
 
 // Enum for resource types
@@ -17,7 +28,14 @@ export enum AuditResourceType {
   USER = 'user',
   LOCATION = 'location',
   PROJECT_PHASE = 'project_phase',
-  PROJECT_TASK = 'project_task'
+  PROJECT_TASK = 'project_task',
+  INVENTORY_ITEM = 'inventory_item',
+  STOCK_MOVEMENT = 'stock_movement',
+  REPORT = 'report',
+  FILE = 'file',
+  SYSTEM = 'system',
+  PERMISSION = 'permission',
+  MATERIAL = 'material'
 }
 
 // Original logAudit function
