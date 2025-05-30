@@ -1,192 +1,74 @@
-# FibreFlow - Project Management System
+# FibreFlow Project Management System
 
-FibreFlow is a comprehensive project management system designed for fiber optic installation projects. Built with Next.js, TypeScript, and Supabase, it provides tools for managing projects, phases, tasks, and team assignments.
-
-## Features
-
-- **Project Management**: Create and manage fiber installation projects
-- **Phase Workflow**: Organize projects into phases with sequential task management
-- **Task Assignment**: Assign tasks and phases to team members
-- **Staff Management**: Manage team members and their assignments
-- **Audit Logging**: Track all changes with comprehensive audit trails
-- **Dark Mode**: Built-in theme support for better user experience
-- **Real-time Updates**: Live data synchronization with Supabase
-
-## Tech Stack
-
-- **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **State Management**: React Hooks
+A comprehensive fiber optic infrastructure management system built with Next.js and Supabase.
 
 ## Project Structure
 
 ```
 FibreFlow/
-├── project-management-app/     # Main Next.js application
-│   ├── src/
-│   │   ├── app/               # App router pages
-│   │   ├── components/        # Reusable components
-│   │   └── lib/              # Utilities and helpers
-│   └── public/               # Static assets
-├── supabase/                 # Database migrations
-└── Various utility scripts   # Database setup and import tools
+├── scripts/                    # Database & Testing Tools (42 files)
+│   ├── database/              # Database connection & setup (16 scripts)
+│   ├── migration/             # SQL migrations & data import (12 scripts)
+│   └── testing/               # Connection & API tests (14 scripts)
+├── docs/                      # Project documentation (8 files)
+├── project-management-app/    # Main Next.js application (81 source files)
+│   ├── src/                   # Application source code
+│   ├── docs/                  # App-specific documentation  
+│   ├── scripts/               # App testing utilities
+│   └── supabase/              # Database migrations
+├── tools/                     # Development utilities
+├── package.json              # Root dependencies (database tools)
+└── .env                      # Environment configuration
 ```
 
-## Getting Started
+## Architecture Overview
 
-### Prerequisites
+This project uses a **monorepo structure** with clear separation of concerns:
 
-- Node.js 18+ and npm
-- Supabase account and project
-- PostgreSQL database (via Supabase)
+- **Root Level**: Database tooling, migrations, and project coordination
+- **App Level**: Frontend project management interface and app-specific utilities
+- **Dual Package Management**: Separate dependency management for database tools vs frontend
 
-### Installation
+## Quick Start
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/VelocityFibre/App_FibreFlow.git
-   cd FibreFlow
-   ```
+### Database Operations
+```bash
+# Test database connection
+cd scripts/database && node config.js
 
-2. Install dependencies:
-   ```bash
-   cd project-management-app
-   npm install
-   ```
+# Run migrations  
+cd scripts/migration && node import-data.js
 
-3. Set up environment variables:
-   Create a `.env.local` file in the `project-management-app` directory:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
+# Test connections
+cd scripts/testing && node test-connection.js
+```
 
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Database Setup
-
-1. Set your database password:
-   - Option 1: Set the `SUPABASE_DB_PASSWORD` environment variable
-   - Option 2: Update the connection strings in the utility scripts
-
-2. Run database migrations:
-   ```sql
-   -- See supabase/migrations/ for migration files
-   ```
-
-3. Import initial data (if needed):
-   ```bash
-   node import-data.js
-   ```
-
-## Key Components
-
-### Assignee Dropdowns
-- `TaskAssigneeDropdown`: Assign tasks to staff members
-- `PhaseAssigneeDropdown`: Assign phases to team members
-- `ProjectAssigneeDropdown`: Assign project managers
-
-### Pages
-- `/projects`: Project listing and creation
-- `/projects/[id]`: Project details with phase and task management
-- `/my-tasks`: Personal task dashboard
-- `/admin/phases-tasks`: Administrative phase and task management
-- `/staff`: Team member management
-
-### Database Schema
-
-Key tables:
-- `projects`: Main project information
-- `phases`: Project phase definitions
-- `project_phases`: Links projects to phases
-- `tasks`: Task definitions
-- `project_tasks`: Tasks assigned to project phases
-- `staff`: Team member information
-- `audit_logs`: Change tracking
-
-For detailed schema information, see `project-management-app/SCHEMA.md`
-
-## Recent Updates
-
-### Enhanced Dashboard (January 2025)
-- Added comprehensive task statistics showing daily completions and top performers
-- Implemented project summaries with current phase and pending task tracking
-- Added days-since-assignment tracking with delay indicators
-- Fixed table name references (projects vs new_projects)
-- Improved data fetching with proper staff member lookups
-
-### Admin Tasks Management Page (January 2025)
-- Created comprehensive admin page for viewing all tasks across projects
-- Added advanced filtering by assignee, project, and status
-- Implemented inline task status and assignee updates
-- Added task grouping by assignee with summary statistics
-
-### Automatic Task Progression (January 2025)
-- Implemented automatic next task assignment when completing a task
-- Added visual indicators for newly assigned tasks
-- Fixed task sequence detection for proper workflow progression
-- Enhanced My Tasks page with reassignment capabilities
-
-### Task Assignment System (May 2025)
-- Fixed task assignment dropdown functionality
-- Resolved data type mismatches between staff IDs and assignment fields
-- Added proper error handling and loading states
-- Improved display of assigned staff members (shows names instead of IDs)
-- Fixed "NaN" display issue for phase assignments
-
-### SSH Key Integration
-- Added SSH key authentication for GitHub
-- Configured Git remote to use SSH instead of HTTPS
-
-## Development
-
-### Running Tests
+### Application Development
 ```bash
 cd project-management-app
-npm test
+npm install
+npm run dev         # Start development server
+npm run build       # Build for production
+npm run lint        # Run linting
 ```
 
-### Building for Production
-```bash
-npm run build
-npm start
-```
+## Documentation
 
-### Code Style
-- TypeScript for type safety
-- ESLint for code linting
-- Prettier for code formatting
+- **File Structure Guidelines**: `docs/claude.md`
+- **Database Schema**: `docs/SCHEMA.md` 
+- **Collaboration Guide**: `docs/COLLABORATION.md`
+- **Project Plan**: `docs/FiberFlow-Project-Plan.md`
 
-## Contributing
+## Performance Targets
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Response Time: < 50ms
+- Memory Usage: < 76MB
+- Built with React Query caching and feature flags
 
-See `project-management-app/COLLABORATION.md` for detailed collaboration guidelines.
+## Tech Stack
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Task names showing as IDs**: Ensure the `tasks` table has a `name` field populated
-2. **"No staff members available"**: Add staff members to the `staff` table in Supabase
-3. **Connection errors**: Check your Supabase URL and anon key in `.env.local`
-4. **Assignment not working**: Verify Row Level Security (RLS) policies in Supabase
-
-## License
-
-This project is proprietary to VelocityFibre.
-
-## Contact
-
-For questions or support, please contact the VelocityFibre development team.
+- **Frontend**: Next.js 15, React 19, Tailwind CSS
+- **Backend**: Supabase, PostgreSQL
+- **State Management**: React Query
+- **Charts**: Nivo, Recharts
+- **UI Components**: Headless UI, Heroicons

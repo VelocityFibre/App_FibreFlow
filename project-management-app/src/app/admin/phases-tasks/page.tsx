@@ -44,9 +44,6 @@ export default function PhasesTasksAdmin() {
     description: ""
   });
   
-  // Setup states for quick setup functionality
-  const [setupLoading, setSetupLoading] = useState(false);
-  const [setupResult, setSetupResult] = useState<string | null>(null);
   
   useEffect(() => {
     fetchPhasesAndTasks();
@@ -239,139 +236,10 @@ export default function PhasesTasksAdmin() {
     }
   }
   
-  // Function to set up default phases and tasks
-  async function setupDefaultPhasesAndTasks() {
-    setSetupLoading(true);
-    setSetupResult(null);
-    
-    try {
-      // Default phases data
-      const defaultPhases = [
-        { name: "Planning", description: "Initial project planning phase", order_no: 1 },
-        { name: "Design", description: "Network design and architecture", order_no: 2 },
-        { name: "Implementation", description: "Physical installation and configuration", order_no: 3 },
-        { name: "Testing", description: "Verification and quality assurance", order_no: 4 },
-        { name: "Handover", description: "Client handover and documentation", order_no: 5 }
-      ];
-      
-      // Insert default phases
-      const { data: phasesData, error: phasesError } = await supabase
-        .from("phases")
-        .insert(defaultPhases)
-        .select();
-      
-      if (phasesError) {
-        throw new Error(`Error creating phases: ${phasesError.message}`);
-      }
-      
-      // Default tasks
-      const defaultTasks = [
-        { title: "Site Survey", description: "Conduct initial site survey", status: "planning" },
-        { title: "Requirements Gathering", description: "Document client requirements", status: "planning" },
-        { title: "Network Design", description: "Create network architecture design", status: "planning" },
-        { title: "Equipment Procurement", description: "Order necessary equipment", status: "planning" },
-        { title: "Cable Installation", description: "Install fiber optic cables", status: "planning" },
-        { title: "Equipment Installation", description: "Install networking equipment", status: "planning" },
-        { title: "Configuration", description: "Configure network devices", status: "planning" },
-        { title: "Testing", description: "Perform connectivity and performance tests", status: "planning" },
-        { title: "Documentation", description: "Prepare handover documentation", status: "planning" },
-        { title: "Client Training", description: "Train client staff on system usage", status: "planning" }
-      ];
-      
-      // Insert default tasks
-      const { data: tasksData, error: tasksError } = await supabase
-        .from("tasks")
-        .insert(defaultTasks)
-        .select();
-      
-      if (tasksError) {
-        throw new Error(`Error creating tasks: ${tasksError.message}`);
-      }
-      
-      // Create audit logs for each task
-      for (const task of tasksData) {
-        await createAuditLog(
-          AuditAction.CREATE,
-          AuditResourceType.PROJECT_TASK,
-          task.id.toString(),
-          { title: task.title }
-        );
-      }
-      
-      setSetupResult(`Successfully created ${phasesData.length} default phases and ${tasksData.length} default tasks!`);
-      fetchPhasesAndTasks();
-    } catch (error: unknown) {
-      let errorMessage = 'Unknown error';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'object' && error && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      
-      setSetupResult(`Error: ${errorMessage}`);
-      console.error("Error setting up phases:", error);
-    } finally {
-      setSetupLoading(false);
-    }
-  }
-  
-  // Placeholder function for the setup button in the UI
-  async function setupDefaultPhases() {
-    await setupDefaultPhasesAndTasks();
-  }
-  
-  // Placeholder function for the create sequential tasks button in the UI
-  async function createPhaseOneSequentialTasks() {
-    setSetupLoading(true);
-    setSetupResult(null);
-    
-    try {
-      // Implementation would go here
-      setSetupResult("Sequential tasks creation feature is coming soon.");
-    } catch (error) {
-      setSetupResult("Error: Failed to create sequential tasks.");
-      console.error("Error creating sequential tasks:", error);
-    } finally {
-      setSetupLoading(false);
-    }
-  }
-  
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Phases & Tasks Management</h1>
       
-      {/* Setup Buttons */}
-      <div className="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800">
-        <h2 className="text-lg font-semibold mb-2">Quick Setup</h2>
-        <p className="mb-4 text-gray-700 dark:text-gray-300">
-          If this is your first time setting up the system, you can create default phases and tasks with one click.
-        </p>
-        <div className="flex flex-wrap gap-4">
-          <button
-            onClick={setupDefaultPhases}
-            disabled={setupLoading || phases.length > 0}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded disabled:opacity-50"
-          >
-            {setupLoading ? "Setting up..." : "Setup Default Phases & Tasks"}
-          </button>
-          
-          <button
-            onClick={createPhaseOneSequentialTasks}
-            disabled={setupLoading}
-            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded disabled:opacity-50"
-          >
-            {setupLoading ? "Creating..." : "Create Phase One Sequential Tasks"}
-          </button>
-        </div>
-        
-        {setupResult && (
-          <div className={`mt-4 p-3 rounded ${setupResult.startsWith("Error") ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300" : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"}`}>
-            {setupResult}
-          </div>
-        )}
-      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Phases Management */}
@@ -427,7 +295,7 @@ export default function PhasesTasksAdmin() {
           {loading ? (
             <p className="text-center py-4">Loading phases...</p>
           ) : phases.length === 0 ? (
-            <p className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded">No phases found. Add your first phase or use the quick setup.</p>
+            <p className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded">No phases found. Add your first phase using the form above.</p>
           ) : (
             <div className="space-y-3">
               {phases.map((phase) => (

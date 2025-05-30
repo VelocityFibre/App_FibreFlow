@@ -1,3 +1,49 @@
+# FibreFlow - Project Management App
+
+## Project Structure
+
+```
+project-management-app/
+├── src/
+│   ├── app/                # Next.js App Router pages
+│   │   ├── admin/         # Admin dashboard pages
+│   │   ├── analytics/     # Analytics & reporting pages
+│   │   ├── dashboard/     # Main dashboard
+│   │   ├── projects/      # Project management pages
+│   │   └── ...            # Other feature pages
+│   ├── components/        # Reusable UI components
+│   │   ├── analytics/     # Analytics-specific components
+│   │   └── charts/        # Chart components
+│   ├── hooks/             # Custom React hooks
+│   └── lib/               # Utilities & configurations
+│       ├── analytics/     # Analytics utilities
+│       ├── auth-*.ts*     # Authentication utilities
+│       ├── supabase.ts    # Supabase client
+│       └── performance.ts # Performance monitoring
+├── scripts/
+│   ├── database/          # Database setup scripts (1 file)
+│   └── testing/           # Test scripts & utilities (9 files)
+├── docs/                  # Documentation files (5 files)
+├── supabase/             # Supabase migrations (2 files)
+└── public/               # Static assets
+```
+
+## Development Guidelines
+
+### Performance Requirements
+- Response time: < 50ms
+- Memory usage: < 76MB
+- Use React Query for all server state
+- Feature flag new functionality
+
+### Key Patterns
+- **Authentication**: Use `src/lib/auth-context.tsx`
+- **Database**: Use `src/lib/supabase.ts` patterns
+- **State Management**: React Query in `src/lib/react-query.ts`
+- **Performance**: Monitor with `src/lib/performance-monitor.ts`
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

@@ -7,6 +7,7 @@ body {
 
 body {
   @apply bg-gray-950 text-gray-200 font-sans antialiased;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
 .dark body {
@@ -15,6 +16,11 @@ body {
 
 .light body {
   @apply bg-white text-gray-800;
+}
+
+/* Theme initialization - prevent flash of unstyled content */
+.theme-initializing body {
+  opacity: 0;
 }
 
 /* Ensure all text has sufficient contrast */
