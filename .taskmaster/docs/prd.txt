@@ -1,0 +1,116 @@
+# FibreFlow - Fiber Optic Infrastructure Management System PRD
+
+## Project Overview
+FibreFlow is a Next.js 14 fiber optic infrastructure management system designed to streamline project management for fiber installation projects. The system helps track projects, phases, tasks, and team assignments with a focus on performance and usability.
+
+## Technical Requirements
+
+### Stack & Architecture
+- Next.js 14 with App Router
+- TypeScript with strict mode enabled
+- Supabase database with Row Level Security
+- Tailwind CSS for styling with custom color palette (#003049, #00406a, #f0f5f9)
+- React Query for server state, React hooks for local state
+- Package manager: npm (not yarn or pnpm)
+
+### Performance Targets
+- Sub-50ms response times for all user interactions
+- Memory usage target of ~76MB
+- Maximum 100 items rendered without virtualization
+- Maximum 3 parallel API calls
+
+### File Structure
+- Components in `/src/components/`
+- Pages in `/src/app/` using Next.js App Router
+- Database utilities in `/src/lib/`
+- No modifications to `/node_modules/` or `.next/`
+- No new files in `/public/` without permission
+
+## Feature Requirements
+
+### Project Management
+- Create, view, edit, and archive projects
+- Track project status, timeline, and assigned team members
+- Implement optimistic updates with rollback for mutations
+- Prevent circular dependencies in project relationships
+
+### Phase Workflow
+- Organize projects into sequential phases
+- Track phase completion status
+- Assign phases to team members
+- Implement phase dependencies and prerequisites
+
+### Task Management
+- Create and assign tasks within phases
+- Track task status, priority, and deadlines
+- Implement automatic task progression
+- Show visual indicators for newly assigned tasks
+- Fix task sequence detection for proper workflow progression
+
+### Staff Management
+- Add, edit, and archive staff records
+- Assign staff to projects, phases, and tasks
+- Track staff workload and availability
+- Fix data type mismatches between staff IDs and assignment fields
+
+### Dashboard & Reporting
+- Comprehensive task statistics showing daily completions
+- Project summaries with current phase and pending task tracking
+- Days-since-assignment tracking with delay indicators
+- Staff performance metrics
+
+### Admin Features
+- Comprehensive admin page for viewing all tasks across projects
+- Advanced filtering by assignee, project, and status
+- Inline task status and assignee updates
+- Task grouping by assignee with summary statistics
+
+## UI/UX Requirements
+- Implement ModuleOverviewLayout for main section pages
+- Use ModuleOverviewCard for navigation cards
+- Use ActionButton for consistent button styling
+- Include loading and error states in all components
+- Implement progress indicators for operations > 1 second
+- Require confirmation for destructive actions
+- Provide user-friendly error messages
+- Implement error boundaries to prevent app crashes
+- Debounce search inputs with 300ms delay
+- Ensure touch targets are minimum 44px for mobile
+- Test dark mode functionality in all components
+
+## Database Requirements
+- Use Supabase client from `/src/lib/supabaseClient.ts`
+- Never expose raw database errors to users
+- Use soft delete with `archived_at` timestamp instead of deleting records
+- Include `created_at` and `updated_at` timestamps on all tables
+- Validate foreign key constraints before database operations
+- Implement Row Level Security policies
+- Fix schema issue: project_tasks.assigned_to (INTEGER) vs staff.id (TEXT)
+
+## Security Requirements
+- Never store sensitive data in localStorage or sessionStorage
+- Never expose internal database IDs in URLs - use slugs
+- Always validate data on both client and server side
+- Implement proper authentication and authorization
+
+## Performance Optimization
+- Lazy load components larger than 50KB
+- Never use useState for server data - always use React Query
+- Profile components after implementation
+- Monitor memory usage and verify < 76MB total
+- Benchmark API calls and optimize if > 50ms
+
+## Immediate Priorities
+1. Fix task assignment dropdown functionality
+2. Resolve data type mismatches between staff IDs and assignment fields
+3. Improve display of assigned staff members (show names instead of IDs)
+4. Fix "NaN" display issue for phase assignments
+5. Enhance My Tasks page with reassignment capabilities
+6. Implement automatic next task assignment when completing a task
+
+## Future Enhancements
+1. Materials and inventory management system
+2. Enhanced reporting and analytics
+3. Mobile application for field staff
+4. Integration with external scheduling systems
+5. Real-time collaboration features

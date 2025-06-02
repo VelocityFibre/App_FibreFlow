@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* Standard Next.js Dark Theme (Default) */
+:root {
+  --background: 0 0 0;
+  --foreground: 255 255 255;
+  --card: 9 9 11;
+  --card-foreground: 250 250 250;
+  --primary: 250 250 250;
+  --primary-foreground: 9 9 11;
+  --secondary: 39 39 42;
+  --secondary-foreground: 250 250 250;
+  --muted: 39 39 42;
+  --muted-foreground: 161 161 170;
+  --accent: 39 39 42;
+  --accent-foreground: 250 250 250;
+  --destructive: 239 68 68;
+  --destructive-foreground: 250 250 250;
+  --border: 39 39 42;
+  --input: 39 39 42;
+  --ring: 250 250 250;
+  --radius: 0.5rem;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --background: 255 255 255;
+  --foreground: 9 9 11;
+  --card: 255 255 255;
+  --card-foreground: 9 9 11;
+  --primary: 9 9 11;
+  --primary-foreground: 250 250 250;
+  --secondary: 244 244 245;
+  --secondary-foreground: 9 9 11;
+  --muted: 244 244 245;
+  --muted-foreground: 113 113 122;
+  --accent: 244 244 245;
+  --accent-foreground: 9 9 11;
+  --destructive: 239 68 68;
+  --destructive-foreground: 250 250 250;
+  --border: 228 228 231;
+  --input: 228 228 231;
+  --ring: 9 9 11;
+}
+
+/* Dark Theme (explicit) */
+[data-theme="dark"] {
+  --background: 0 0 0;
+  --foreground: 255 255 255;
+  --card: 9 9 11;
+  --card-foreground: 250 250 250;
+  --primary: 250 250 250;
+  --primary-foreground: 9 9 11;
+  --secondary: 39 39 42;
+  --secondary-foreground: 250 250 250;
+  --muted: 39 39 42;
+  --muted-foreground: 161 161 170;
+  --accent: 39 39 42;
+  --accent-foreground: 250 250 250;
+  --destructive: 239 68 68;
+  --destructive-foreground: 250 250 250;
+  --border: 39 39 42;
+  --input: 39 39 42;
+  --ring: 250 250 250;
+}
+
+/* VF (VelocityFibre) Blue Theme - For Hein */
+[data-theme="vf"] {
+  --background: 15 23 42;        /* Deep navy blue */
+  --foreground: 248 250 252;     /* Light blue-white */
+  --card: 30 41 59;              /* Card background - darker blue */
+  --card-foreground: 248 250 252; /* Light text on cards */
+  --primary: 59 130 246;         /* VF Blue primary */
+  --primary-foreground: 255 255 255; /* White text on blue */
+  --secondary: 51 65 85;         /* Secondary blue-gray */
+  --secondary-foreground: 226 232 240; /* Light text */
+  --muted: 51 65 85;             /* Muted blue-gray */
+  --muted-foreground: 148 163 184; /* Muted text */
+  --accent: 79 70 229;           /* Accent indigo */
+  --accent-foreground: 255 255 255; /* White on accent */
+  --destructive: 239 68 68;      /* Red for errors */
+  --destructive-foreground: 255 255 255; /* White on red */
+  --border: 51 65 85;            /* Border blue-gray */
+  --input: 51 65 85;             /* Input background */
+  --ring: 59 130 246;            /* Focus ring blue */
+}
+
+/* Base styles */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+  @apply antialiased;
+}
+
+/* Utility classes for theme colors */
+.bg-background { background-color: rgb(var(--background)); }
+.bg-foreground { background-color: rgb(var(--foreground)); }
+.bg-card { background-color: rgb(var(--card)); }
+.bg-primary { background-color: rgb(var(--primary)); }
+.bg-secondary { background-color: rgb(var(--secondary)); }
+.bg-muted { background-color: rgb(var(--muted)); }
+.bg-accent { background-color: rgb(var(--accent)); }
+.bg-destructive { background-color: rgb(var(--destructive)); }
+
+.text-foreground { color: rgb(var(--foreground)); }
+.text-card-foreground { color: rgb(var(--card-foreground)); }
+.text-primary-foreground { color: rgb(var(--primary-foreground)); }
+.text-secondary-foreground { color: rgb(var(--secondary-foreground)); }
+.text-muted-foreground { color: rgb(var(--muted-foreground)); }
+.text-accent-foreground { color: rgb(var(--accent-foreground)); }
+.text-destructive-foreground { color: rgb(var(--destructive-foreground)); }
+
+.border-border { border-color: rgb(var(--border)); }
+.border-input { border-color: rgb(var(--input)); }
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
