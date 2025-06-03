@@ -1,0 +1,35 @@
+/* FibreFlow Custom Theme - Extract this section only */
+.fibreflow {
+  --background: 0 48 73; /* #003049 - your brand color as background */
+  --foreground: 247 250 252;
+  --card: 15 23 42;
+  --card-foreground: 248 250 252;
+  --popover: 15 23 42;
+  --popover-foreground: 248 250 252;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 30 41 59;
+  --secondary-foreground: 248 250 252;
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  --accent: 30 41 59;
+  --accent-foreground: 248 250 252;
+  --destructive: 239 68 68;
+  --destructive-foreground: 248 250 252;
+  --border: 30 41 59;
+  --input: 30 41 59;
+  --ring: 59 130 246;
+}
+
+/* FibreFlow specific overrides */
+.fibreflow .text-[#003049] {
+  color: rgb(0 48 73);
+}
+
+.fibreflow .bg-[#003049] {
+  background-color: rgb(0 48 73);
+}
+
+.fibreflow .border-[#003049] {
+  border-color: rgb(0 48 73);
+}
