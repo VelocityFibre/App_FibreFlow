@@ -20,7 +20,6 @@ const navItems = [
 
 const adminItems = [
   { href: '/staff', label: 'Staff Management' },
-  { href: '/auto-setup', label: 'Database Setup' },
   { href: '/admin/phases-tasks', label: 'Phases & Tasks' },
   { href: '/admin/audit-logs', label: 'Audit Logs' },
   { href: '/admin/feature-flags', label: 'Feature Flags' },

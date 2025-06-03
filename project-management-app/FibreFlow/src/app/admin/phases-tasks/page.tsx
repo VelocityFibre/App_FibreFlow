@@ -377,36 +377,6 @@ export default function PhasesTasksAdmin() {
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Phases & Tasks Management</h1>
       
-      {/* Setup Buttons */}
-      <div className="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800">
-        <h2 className="text-lg font-semibold mb-2">Quick Setup</h2>
-        <p className="mb-4 text-gray-700 dark:text-gray-300">
-          If this is your first time setting up the system, you can create default phases and tasks with one click.
-        </p>
-        <div className="flex flex-wrap gap-4">
-          <button
-            onClick={setupDefaultPhases}
-            disabled={setupLoading || phases.length > 0}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded disabled:opacity-50"
-          >
-            {setupLoading ? "Setting up..." : "Setup Default Phases & Tasks"}
-          </button>
-          
-          <button
-            onClick={createPhaseOneSequentialTasks}
-            disabled={setupLoading}
-            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded disabled:opacity-50"
-          >
-            {setupLoading ? "Creating..." : "Create Phase One Sequential Tasks"}
-          </button>
-        </div>
-        
-        {setupResult && (
-          <div className={`mt-4 p-3 rounded ${setupResult.startsWith("Error") ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300" : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"}`}>
-            {setupResult}
-          </div>
-        )}
-      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Phases Management */}
