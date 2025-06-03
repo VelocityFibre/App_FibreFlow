@@ -22,10 +22,12 @@ interface Project {
   customer_id?: string;
   created_at?: string;
   start_date?: string;
+  end_date?: string;
   location_id?: string;
-  province?: string;
   region?: string;
+  status?: string;
   customers?: Customer;
+  province_name?: string; // For display purposes only
 }
 
 interface Location {
@@ -33,16 +35,23 @@ interface Location {
   location_name: string;
 }
 
+interface Province {
+  id: string;
+  name: string;
+  code: string;
+  region: string;
+  created_time?: string;
+}
+
 
 
 interface Customer {
   id: string;
-  name: string;
-  address_line1?: string;
-  address_line2?: string;
-  city?: string;
-  postal_code?: string;
-  email?: string;
+  client_name: string;
+  client_type?: string;
+  contact_information?: string;
+  sla_terms?: string;
+  created_time?: string;
 }
 
 function ProjectsContent() {
@@ -57,17 +66,21 @@ function ProjectsContent() {
   const [newProject, setNewProject] = useState<Project>({
     id: "",
     name: "",
-    province: "",
     region: "",
     customer_id: customerId || "",
     start_date: "",
+    end_date: "",
     location_id: "",
+    status: "Not Started"
   });
 
   const [locations, setLocations] = useState<Location[]>([]);
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
   const [projectManager, setProjectManager] = useState<number | null>(null);
   const [taskAssignee, setTaskAssignee] = useState<number | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<{success: boolean, message: string} | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Define fetch functions with useCallback to prevent infinite loops
   const fetchCustomers = React.useCallback(async () => {
@@ -75,7 +88,7 @@ function ProjectsContent() {
       const { data, error } = await supabase
         .from("customers")
         .select("*")
-        .order("name");
+        .order("client_name");
       if (error) {
         console.error("Error fetching customers:", error);
       } else {
@@ -99,6 +112,22 @@ function ProjectsContent() {
       }
     } catch (error) {
       console.error("Unexpected error in fetchLocations:", error);
+    }
+  }, []);
+
+  const fetchProvinces = React.useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("provinces")
+        .select("*")
+        .order("name");
+      if (error) {
+        console.error("Error fetching provinces:", error);
+      } else {
+        setProvinces(data || []);
+      }
+    } catch (error) {
+      console.error("Unexpected error in fetchProvinces:", error);
     }
   }, []);
 
@@ -151,9 +180,10 @@ function ProjectsContent() {
             customer_id: project.customer_id,
             created_at: project.created_at,
             start_date: project.start_date,
+            end_date: project.end_date,
             location_id: project.location_id,
-            province: project.province || '',
-            region: project.region || ''
+            region: project.region || '',
+            status: project.status || 'Not Started'
           }));
           setProjects(formattedProjects);
 
@@ -164,7 +194,7 @@ function ProjectsContent() {
                 try {
                   const { data: customerData } = await supabase
                     .from("customers")
-                    .select("name")
+                    .select("client_name")
                     .eq("id", project.customer_id)
                     .single();
                   
@@ -197,8 +227,9 @@ function ProjectsContent() {
     // Then fetch data
     fetchData();
     fetchLocations();
+    fetchProvinces();
     fetchCustomers();
-  }, [fetchData, fetchLocations, fetchCustomers]);
+  }, [fetchData, fetchLocations, fetchProvinces, fetchCustomers]);
   
   async function testConnection() {
     // Test general Supabase connection
@@ -234,12 +265,19 @@ function ProjectsContent() {
   // This function is now defined with useCallback above
 
   async function handleAddProject() {
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      return;
+    }
+    
     console.log('Current form state:', { newProject, projectManager, taskAssignee });
     
     if (!newProject.name) {
       alert("Project name is required");
       return;
     }
+    
+    setIsSubmitting(true);
     
     // Don't force a default project manager - allow null values
     let effectiveProjectManager = projectManager;
@@ -279,10 +317,10 @@ function ProjectsContent() {
         id: uuidv4(), // Generate a UUID for the id field
         project_name: projectData.name,
         customer_id: projectData.customer_id,
-        province: projectData.province,
         region: projectData.region,
         start_date: projectData.start_date,
         location_id: projectData.location_id,
+        status: projectData.status || "Not Started"
       };
       
       // Create a clean payload with proper typing
@@ -291,10 +329,10 @@ function ProjectsContent() {
         project_name: string;
         // Make customer_id optional to handle schema differences
         customer_id?: string;
-        province?: string;
         region?: string;
         start_date?: string;
         location_id?: string;
+        status?: string;
         [key: string]: string | undefined; // More specific index signature
       }
       
@@ -373,12 +411,15 @@ function ProjectsContent() {
         setNewProject({
           id: "",
           name: "",
-          province: "",
           region: "",
           customer_id: customerId || "",
           start_date: "",
+          end_date: "",
           location_id: "",
+          status: "Not Started"
         });
+        setSelectedProvince("");
+        setIsSubmitting(false);
       }, 100);
 
       // Refresh data
@@ -386,6 +427,7 @@ function ProjectsContent() {
     } catch (error) {
       console.error("Unexpected error in handleAddProject:", error);
       alert(`An unexpected error occurred: ${error}`);
+      setIsSubmitting(false);
     }
   }
 
@@ -405,20 +447,15 @@ function ProjectsContent() {
       {customer && (
         <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800">
           <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">
-            {customer.name}
+            {customer.client_name}
           </h3>
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            {customer.address_line1 && <div>{customer.address_line1}</div>}
-            {customer.address_line2 && <div>{customer.address_line2}</div>}
-            {(customer.city || customer.postal_code) && (
-              <div>
-                {customer.city}
-                {customer.city && customer.postal_code && ", "}
-                {customer.postal_code}
-              </div>
+            {customer.client_type && <div>Type: {customer.client_type}</div>}
+            {customer.contact_information && (
+              <div className="mt-2">Contact: {customer.contact_information}</div>
             )}
-            {customer.email && (
-              <div className="mt-2">Email: {customer.email}</div>
+            {customer.sla_terms && (
+              <div className="mt-2">SLA: {customer.sla_terms}</div>
             )}
           </div>
         </div>
@@ -435,32 +472,44 @@ function ProjectsContent() {
               type="text"
               placeholder="Project Name *"
               className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newProject.name}
+              value={newProject.name || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, name: e.target.value })
               }
             />
           </div>
           <div>
-            <input
-              type="text"
-              placeholder="Province"
+            <select
               className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newProject.province}
-              onChange={(e) =>
-                setNewProject({ ...newProject, province: e.target.value })
-              }
-            />
+              value={selectedProvince}
+              onChange={(e) => {
+                setSelectedProvince(e.target.value);
+                // Find the selected province and set its region
+                const province = provinces.find(p => p.id === e.target.value);
+                if (province) {
+                  setNewProject({ ...newProject, region: province.region });
+                }
+              }}
+            >
+              <option value="">Select Province</option>
+              {provinces.map((province) => (
+                <option key={province.id} value={province.id}>
+                  {province.name} ({province.code})
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <input
               type="text"
               placeholder="Region"
               className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newProject.region}
+              value={newProject.region || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, region: e.target.value })
               }
+              disabled={selectedProvince !== ""}
+              title={selectedProvince ? "Region is auto-filled from selected province" : ""}
             />
           </div>
           <div>
@@ -468,7 +517,7 @@ function ProjectsContent() {
               type="date"
               placeholder="Start Date"
               className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newProject.start_date}
+              value={newProject.start_date || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, start_date: e.target.value })
               }
@@ -477,7 +526,7 @@ function ProjectsContent() {
           <div>
             <select
               className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newProject.location_id}
+              value={newProject.location_id || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, location_id: e.target.value })
               }
@@ -494,7 +543,7 @@ function ProjectsContent() {
             <div className="md:col-span-3">
               <select
                 className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                value={newProject.customer_id}
+                value={newProject.customer_id || ""}
                 onChange={(e) =>
                   setNewProject({ ...newProject, customer_id: e.target.value })
                 }
@@ -502,7 +551,7 @@ function ProjectsContent() {
                 <option value="">Select Customer *</option>
                 {customers.map((cust) => (
                   <option key={cust.id} value={cust.id}>
-                    {cust.name}
+                    {cust.client_name}
                   </option>
                 ))}
               </select>
@@ -524,10 +573,15 @@ function ProjectsContent() {
           </div>
           <div className={customerId ? "md:col-span-3" : ""}>
             <button
-              className="bg-black dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded w-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+              className={`px-4 py-2 rounded w-full transition-colors ${
+                isSubmitting 
+                  ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed" 
+                  : "bg-black dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100"
+              }`}
               onClick={handleAddProject}
+              disabled={isSubmitting}
             >
-              Add Project
+              {isSubmitting ? "Adding Project..." : "Add Project"}
             </button>
           </div>
         </div>
@@ -574,11 +628,11 @@ function ProjectsContent() {
                   </td>
                   {!customer && (
                     <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                      {project.customers?.name || "Unknown"}
+                      {project.customers?.client_name || "Unknown"}
                     </td>
                   )}
                   <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {project.province}
+                    {provinces.find(p => p.region === project.region)?.name || "-"}
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                     {project.region}

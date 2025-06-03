@@ -7,6 +7,8 @@ import { isFeatureEnabled, FeatureFlag } from '@/lib/feature-flags';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/projects', label: 'Projects' },
+  { href: '/projects/b80e25dc-e3ca-4d94-a9dd-9742701bbc81', label: 'Project Detail' },
+  { href: '/admin/tasks', label: 'All Tasks' },
   { href: '/customers', label: 'Customers' },
   { href: '/my-tasks', label: 'My Tasks' },
   { href: '/kanban', label: 'Kanban' },
@@ -14,17 +16,16 @@ const navItems = [
   { href: '/grid', label: 'Grid' },
   { href: '/materials', label: 'Materials' },
   { href: '/analytics/dashboard', label: 'Analytics', featureFlag: FeatureFlag.ANALYTICS_DASHBOARD },
-  { href: '/auth', label: 'Settings' },
 ];
 
 const adminItems = [
   { href: '/staff', label: 'Staff Management' },
   { href: '/auto-setup', label: 'Database Setup' },
-  { href: '/admin/tasks', label: 'All Tasks' },
   { href: '/admin/phases-tasks', label: 'Phases & Tasks' },
   { href: '/admin/audit-logs', label: 'Audit Logs' },
   { href: '/admin/feature-flags', label: 'Feature Flags' },
   { href: '/admin/performance', label: 'Performance' },
+  { href: '/auth', label: 'Settings' },
 ];
 
 const analyticsItems = [

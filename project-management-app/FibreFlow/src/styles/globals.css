@@ -85,6 +85,42 @@
   --ring: 59 130 246;            /* Focus ring blue */
 }
 
+/* FibreFlow Custom Theme */
+[data-theme="fibreflow"] {
+  --background: 0 48 73;         /* #003049 - brand color as background */
+  --foreground: 247 250 252;     /* Light text */
+  --card: 15 23 42;              /* Card background */
+  --card-foreground: 248 250 252; /* Light text on cards */
+  --popover: 15 23 42;           /* Popover background */
+  --popover-foreground: 248 250 252; /* Light text on popovers */
+  --primary: 59 130 246;         /* Primary blue */
+  --primary-foreground: 255 255 255; /* White text on primary */
+  --secondary: 30 41 59;         /* Secondary dark blue */
+  --secondary-foreground: 248 250 252; /* Light text on secondary */
+  --muted: 30 41 59;             /* Muted dark blue */
+  --muted-foreground: 148 163 184; /* Muted text */
+  --accent: 30 41 59;            /* Accent dark blue */
+  --accent-foreground: 248 250 252; /* Light text on accent */
+  --destructive: 239 68 68;      /* Red for errors */
+  --destructive-foreground: 248 250 252; /* Light text on destructive */
+  --border: 30 41 59;            /* Border dark blue */
+  --input: 30 41 59;             /* Input background */
+  --ring: 59 130 246;            /* Focus ring blue */
+}
+
+/* FibreFlow specific overrides */
+[data-theme="fibreflow"] .text-[#003049] {
+  color: rgb(0 48 73);
+}
+
+[data-theme="fibreflow"] .bg-[#003049] {
+  background-color: rgb(0 48 73);
+}
+
+[data-theme="fibreflow"] .border-[#003049] {
+  border-color: rgb(0 48 73);
+}
+
 /* Base styles */
 html,
 body {

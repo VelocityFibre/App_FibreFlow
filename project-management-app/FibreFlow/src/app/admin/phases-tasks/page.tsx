@@ -23,6 +23,8 @@ export default function PhasesTasksAdmin() {
   const [phases, setPhases] = useState<Phase[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [setupResult, setSetupResult] = useState<string>("");
   
   // Phase form state
   const [newPhase, setNewPhase] = useState<{
@@ -237,10 +239,56 @@ export default function PhasesTasksAdmin() {
     }
   }
   
+  async function setupDefaultPhases() {
+    setSetupLoading(true);
+    setSetupResult("");
+    
+    try {
+      // Default phases
+      const defaultPhases = [
+        { name: "Phase 1", description: "Initial planning and setup", order_no: 1 },
+        { name: "Phase 2", description: "Development and implementation", order_no: 2 },
+        { name: "Phase 3", description: "Testing and refinement", order_no: 3 },
+        { name: "Phase 4", description: "Deployment and handover", order_no: 4 }
+      ];
+      
+      // Insert phases
+      const { data: phasesData, error: phasesError } = await supabase
+        .from("phases")
+        .insert(defaultPhases)
+        .select();
+      
+      if (phasesError) {
+        throw new Error(`Error creating phases: ${phasesError.message}`);
+      }
+      
+      // Default tasks
+      const defaultTasks = [
+        { title: "Requirements gathering", description: "Collect and document all requirements", status: 'planning' as const },
+        { title: "System design", description: "Create system architecture and design documents", status: 'planning' as const },
+        { title: "Development", description: "Implement the solution", status: 'planning' as const },
+        { title: "Testing", description: "Test all functionality", status: 'planning' as const },
+        { title: "Deployment", description: "Deploy to production", status: 'planning' as const }
+      ];
+      
+      // Insert tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
+        .insert(defaultTasks)
         .select();
       
       if (tasksError) {
         throw new Error(`Error creating tasks: ${tasksError.message}`);
+      }
+      
+      // Create audit logs for each phase
+      for (const phase of phasesData) {
+        await createAuditLog(
+          AuditAction.CREATE,
+          AuditResourceType.PHASE,
+          phase.id,
+          { name: phase.name }
+        );
       }
       
       // Create audit logs for each task
@@ -249,7 +297,7 @@ export default function PhasesTasksAdmin() {
           AuditAction.CREATE,
           AuditResourceType.PROJECT_TASK,
           task.id.toString(),
-          { title: task.title, phase_id: task.phase_id }
+          { title: task.title }
         );
       }
       
@@ -267,6 +315,59 @@ export default function PhasesTasksAdmin() {
       
       setSetupResult(`Error: ${errorMessage}`);
       console.error("Error setting up phases:", error);
+    } finally {
+      setSetupLoading(false);
+    }
+  }
+  
+  async function createPhaseOneSequentialTasks() {
+    setSetupLoading(true);
+    setSetupResult("");
+    
+    try {
+      // Sequential tasks for Phase 1
+      const sequentialTasks = [
+        { title: "Initial site survey", description: "Conduct initial site assessment", status: 'planning' as const },
+        { title: "Feasibility study", description: "Assess technical and financial feasibility", status: 'planning' as const },
+        { title: "Stakeholder meeting", description: "Meet with all stakeholders", status: 'planning' as const },
+        { title: "Project kickoff", description: "Official project start", status: 'planning' as const },
+        { title: "Resource allocation", description: "Assign team and resources", status: 'planning' as const }
+      ];
+      
+      // Insert tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
+        .insert(sequentialTasks)
+        .select();
+      
+      if (tasksError) {
+        throw new Error(`Error creating tasks: ${tasksError.message}`);
+      }
+      
+      // Create audit logs for each task
+      for (const task of tasksData) {
+        await createAuditLog(
+          AuditAction.CREATE,
+          AuditResourceType.PROJECT_TASK,
+          task.id.toString(),
+          { title: task.title }
+        );
+      }
+      
+      setSetupResult(`Successfully created ${tasksData.length} sequential tasks for Phase 1!`);
+      fetchPhasesAndTasks();
+    } catch (error: unknown) {
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error && 'message' in error) {
+        errorMessage = String((error as { message?: string }).message);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      setSetupResult(`Error: ${errorMessage}`);
+      console.error("Error creating sequential tasks:", error);
     } finally {
       setSetupLoading(false);
     }

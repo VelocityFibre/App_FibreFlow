@@ -2,16 +2,23 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+interface Customer {
+  id: string;
+  client_name: string;
+  client_type: string;
+  contact_information: string;
+  sla_terms: string;
+  created_time: string;
+}
+
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [editing, setEditing] = useState<string|null>(null);
   const [newCustomer, setNewCustomer] = useState({ 
-    name: "", 
-    email: "", 
-    address_line1: "", 
-    address_line2: "", 
-    city: "", 
-    postal_code: "" 
+    client_name: "", 
+    client_type: "", 
+    contact_information: "", 
+    sla_terms: "" 
   });
   const [loading, setLoading] = useState(true);
 
@@ -22,12 +29,17 @@ export default function CustomersPage() {
   async function fetchCustomers() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("customers").select("*");
+      console.log("Fetching customers from database...");
+      const { data, error, count } = await supabase
+        .from("customers")
+        .select("*", { count: 'exact' });
       
       if (error) {
         console.error("Error fetching customers:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
       } else {
-        console.log("Fetched customers:", data);
+        console.log("Fetched customers count:", count);
+        console.log("Fetched customers data:", data);
         setCustomers(data || []);
       }
     } catch (error) {
@@ -40,21 +52,37 @@ export default function CustomersPage() {
   async function handleSave(id: string) {
     const customer = customers.find((c) => c.id === id);
     if (!customer) return;
-    await supabase.from("customers").update(customer).eq("id", id);
+    const { error } = await supabase.from("customers").update(customer).eq("id", id);
+    if (error) {
+      console.error("Error updating customer:", error);
+      alert(`Failed to update customer: ${error.message}`);
+      return;
+    }
     setEditing(null);
     fetchCustomers();
   }
 
   async function handleAdd() {
-    if (!newCustomer.name) return;
-    await supabase.from("customers").insert([newCustomer]);
+    if (!newCustomer.client_name) return;
+    
+    // Generate UUID for the new customer
+    const customerWithId = {
+      id: crypto.randomUUID(),
+      ...newCustomer,
+      created_time: new Date().toISOString()
+    };
+    
+    const { error } = await supabase.from("customers").insert([customerWithId]);
+    if (error) {
+      console.error("Error adding customer:", error);
+      alert(`Failed to add customer: ${error.message}`);
+      return;
+    }
     setNewCustomer({ 
-      name: "", 
-      email: "", 
-      address_line1: "", 
-      address_line2: "", 
-      city: "", 
-      postal_code: "" 
+      client_name: "", 
+      client_type: "", 
+      contact_information: "", 
+      sla_terms: "" 
     });
     fetchCustomers();
   }
@@ -70,55 +98,37 @@ export default function CustomersPage() {
         <div>
           <input
             type="text"
-            placeholder="Customer Name *"
+            placeholder="Client Name *"
             className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.name}
-            onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.email}
-            onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })}
+            value={newCustomer.client_name}
+            onChange={e => setNewCustomer({ ...newCustomer, client_name: e.target.value })}
           />
         </div>
         <div>
           <input
             type="text"
-            placeholder="Address Line 1"
+            placeholder="Client Type"
             className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.address_line1}
-            onChange={e => setNewCustomer({ ...newCustomer, address_line1: e.target.value })}
+            value={newCustomer.client_type}
+            onChange={e => setNewCustomer({ ...newCustomer, client_type: e.target.value })}
           />
         </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Address Line 2"
+        <div className="md:col-span-2">
+          <textarea
+            placeholder="Contact Information"
             className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.address_line2}
-            onChange={e => setNewCustomer({ ...newCustomer, address_line2: e.target.value })}
+            value={newCustomer.contact_information}
+            onChange={e => setNewCustomer({ ...newCustomer, contact_information: e.target.value })}
+            rows={3}
           />
         </div>
-        <div>
-          <input
-            type="text"
-            placeholder="City"
+        <div className="md:col-span-2">
+          <textarea
+            placeholder="SLA Terms"
             className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.city}
-            onChange={e => setNewCustomer({ ...newCustomer, city: e.target.value })}
-          />
-        </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Postal Code"
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.postal_code}
-            onChange={e => setNewCustomer({ ...newCustomer, postal_code: e.target.value })}
+            value={newCustomer.sla_terms}
+            onChange={e => setNewCustomer({ ...newCustomer, sla_terms: e.target.value })}
+            rows={3}
           />
         </div>
         <div className="md:col-span-2">
@@ -130,14 +140,19 @@ export default function CustomersPage() {
       </div>
       {loading ? (
         <p className="text-gray-600 dark:text-gray-300">Loading customers...</p>
+      ) : customers.length === 0 ? (
+        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <p className="text-gray-600 dark:text-gray-300 mb-2">No customers found</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Add your first customer using the form above</p>
+        </div>
       ) : (
         <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Name</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Email</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Address</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Projects</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Client Name</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Client Type</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Contact Info</th>
+              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">SLA Terms</th>
               <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Actions</th>
             </tr>
           </thead>
@@ -148,79 +163,53 @@ export default function CustomersPage() {
                   {editing === customer.id ? (
                     <input
                       type="text"
-                      value={customer.name}
-                      onChange={e => handleEditField(customer.id, "name", e.target.value)}
-                      className="border rounded px-2 py-1"
+                      value={customer.client_name}
+                      onChange={e => handleEditField(customer.id, "client_name", e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   ) : (
-                    customer.name
+                    customer.client_name
                   )}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (
                     <input
-                      type="email"
-                      value={customer.email}
-                      onChange={e => handleEditField(customer.id, "email", e.target.value)}
-                      className="border rounded px-2 py-1"
+                      type="text"
+                      value={customer.client_type || ''}
+                      onChange={e => handleEditField(customer.id, "client_type", e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   ) : (
-                    customer.email
+                    customer.client_type || '-'
                   )}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        placeholder="Address Line 1"
-                        value={customer.address_line1 || ''}
-                        onChange={e => handleEditField(customer.id, "address_line1", e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Address Line 2"
-                        value={customer.address_line2 || ''}
-                        onChange={e => handleEditField(customer.id, "address_line2", e.target.value)}
-                        className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="City"
-                          value={customer.city || ''}
-                          onChange={e => handleEditField(customer.id, "city", e.target.value)}
-                          className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Postal Code"
-                          value={customer.postal_code || ''}
-                          onChange={e => handleEditField(customer.id, "postal_code", e.target.value)}
-                          className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </div>
-                    </div>
+                    <textarea
+                      value={customer.contact_information || ''}
+                      onChange={e => handleEditField(customer.id, "contact_information", e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      rows={2}
+                    />
                   ) : (
-                    <div>
-                      {customer.address_line1 && <div>{customer.address_line1}</div>}
-                      {customer.address_line2 && <div>{customer.address_line2}</div>}
-                      {(customer.city || customer.postal_code) && (
-                        <div>
-                          {customer.city}{customer.city && customer.postal_code && ', '}{customer.postal_code}
-                        </div>
-                      )}
+                    <div className="max-w-xs truncate">
+                      {customer.contact_information || '-'}
                     </div>
                   )}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  <a 
-                    href={`/projects?customer=${customer.id}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    View Projects
-                  </a>
+                  {editing === customer.id ? (
+                    <textarea
+                      value={customer.sla_terms || ''}
+                      onChange={e => handleEditField(customer.id, "sla_terms", e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      rows={2}
+                    />
+                  ) : (
+                    <div className="max-w-xs truncate">
+                      {customer.sla_terms || '-'}
+                    </div>
+                  )}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
                   {editing === customer.id ? (

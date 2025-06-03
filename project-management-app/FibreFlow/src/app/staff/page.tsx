@@ -3,11 +3,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface StaffMember {
-  id: number;
+  id: string;
+  created_time?: string;
   name: string;
-  email?: string;
   role?: string;
-  is_active?: boolean;
+  phone_number?: string;
+  email?: string;
+  photo?: string | null;
+  total_assigned_projects?: number;
+  current_projects?: any[];
+  tasks_assigned?: string;
+  created_at?: string;
+  updated_at?: string;
+  is_active?: boolean; // We'll add this functionality with a new column
 }
 
 export default function StaffPage() {
@@ -26,16 +34,23 @@ export default function StaffPage() {
   async function fetchStaff() {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      console.log("Fetching staff from database...");
+      const { data, error, count } = await supabase
         .from("staff")
-        .select("*")
+        .select("*", { count: 'exact' })
         .order("name");
 
       if (error) {
         console.error("Error fetching staff:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         alert(`Error fetching staff: ${error.message}`);
       } else {
-        console.log("Fetched staff:", data);
+        console.log("Fetched staff count:", count);
+        console.log("Fetched staff data:", data);
+        // Log the structure of the first staff member
+        if (data && data.length > 0) {
+          console.log("First staff member structure:", Object.keys(data[0]));
+        }
         setStaff(data || []);
       }
     } catch (error) {
@@ -76,21 +91,26 @@ export default function StaffPage() {
     }
   }
 
-  async function toggleActive(id: number, currentStatus: boolean) {
+  async function toggleActive(id: string | number, currentStatus: boolean) {
     try {
-      const { error } = await supabase
+      console.log('Attempting to toggle staff:', { id, currentStatus, newStatus: !currentStatus });
+      
+      const { data, error } = await supabase
         .from("staff")
         .update({ is_active: !currentStatus })
-        .eq("id", id);
+        .eq("id", id)
+        .select();
 
       if (error) {
         console.error("Error updating staff:", error);
         alert(`Failed to update staff member: ${error.message}`);
       } else {
+        console.log("Staff updated successfully:", data);
         fetchStaff();
       }
     } catch (error) {
       console.error("Unexpected error in toggleActive:", error);
+      alert(`An unexpected error occurred: ${error}`);
     }
   }
 
@@ -199,20 +219,20 @@ export default function StaffPage() {
                   <td className="py-3 px-4 text-sm">
                     <span
                       className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        member.is_active
+                        member.is_active !== false
                           ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                           : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                       }`}
                     >
-                      {member.is_active ? "Active" : "Inactive"}
+                      {member.is_active !== false ? "Active" : "Inactive"}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-sm">
                     <button
-                      onClick={() => toggleActive(member.id, member.is_active || false)}
+                      onClick={() => toggleActive(member.id, member.is_active !== false)}
                       className="text-blue-600 dark:text-blue-400 hover:underline"
                     >
-                      {member.is_active ? "Deactivate" : "Activate"}
+                      {member.is_active !== false ? "Deactivate" : "Activate"}
                     </button>
                   </td>
                 </tr>

@@ -7,7 +7,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider
       attribute="data-theme"
       defaultTheme="dark"
-      themes={['light', 'dark', 'vf']}
+      themes={['light', 'dark', 'vf', 'fibreflow']}
       enableSystem={false}
       storageKey="fibreflow-theme"
     >

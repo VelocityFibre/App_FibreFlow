@@ -1,7 +1,7 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Zap } from 'lucide-react';
+import { Moon, Sun, Zap, Waves } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function ThemeSwitcher() {
@@ -52,6 +52,18 @@ export default function ThemeSwitcher() {
           aria-label="Switch to VF blue theme"
         >
           <Zap className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => setTheme('fibreflow')}
+          className={`p-2 rounded transition-all duration-200 ${
+            theme === 'fibreflow' 
+              ? 'bg-primary text-primary-foreground shadow-inner' 
+              : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+          }`}
+          title="FibreFlow Theme"
+          aria-label="Switch to FibreFlow theme"
+        >
+          <Waves className="w-5 h-5" />
         </button>
       </div>
     </div>
