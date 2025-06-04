@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 
 const KPI_CONFIG = [
   { label: "Projects", table: "projects", link: "/projects" },
@@ -73,11 +73,11 @@ export default function DashboardPage() {
   const [projectSummaries, setProjectSummaries] = useState<ProjectSummary[]>([]);
   const [staffMembers, setStaffMembers] = useState<{[id: string]: string}>({});
 
-  // Using format from date-fns for formatting dates
-  const formatDate = (date: string | undefined) => {
-    if (!date) return 'N/A';
-    return format(new Date(date), 'dd MMM yyyy');
-  };
+  // formatDate helper function available if needed
+  // const formatDate = (date: string | undefined) => {
+  //   if (!date) return 'N/A';
+  //   return format(new Date(date), 'dd MMM yyyy');
+  // };
 
   async function fetchKPIs() {
     const results = await Promise.all(
@@ -340,118 +340,114 @@ export default function DashboardPage() {
   }, [staffMembers]);
 
   return (
-    <div className="flex flex-col gap-8 w-full">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Overview of your projects and activities</p>
-        </div>
+    <div className="ff-page-container">
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">Dashboard</h1>
+        <p className="ff-page-subtitle">Overview of your projects and activities</p>
       </div>
 
       {/* Task Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* Tasks Completed Today */}
-        <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tasks Completed Today</h3>
-          <div className="mt-2">
-            <span className="text-3xl font-semibold text-gray-900 dark:text-white">{taskStats.completed_today}</span>
+      <section className="ff-section">
+        <h2 className="ff-section-title">Task Statistics</h2>
+        <div className="ff-grid-cards">
+          {/* Tasks Completed Today */}
+          <div className="ff-card-stats">
+            <h3 className="ff-stat-label">Tasks Completed Today</h3>
+            <div className="ff-stat-value">{taskStats.completed_today}</div>
           </div>
-        </div>
 
-        {/* Most Outstanding Tasks */}
-        <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Most Outstanding Tasks</h3>
-          <div className="mt-2">
+          {/* Most Outstanding Tasks */}
+          <div className="ff-card-stats">
+            <h3 className="ff-stat-label">Most Outstanding Tasks</h3>
             {taskStats.most_outstanding ? (
               <>
-                <span className="text-3xl font-semibold text-gray-900 dark:text-white">{taskStats.most_outstanding.tasks_assigned}</span>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Assignee: {taskStats.most_outstanding.name}</p>
+                <div className="ff-stat-value">{taskStats.most_outstanding.tasks_assigned}</div>
+                <p className="ff-muted-text mt-1">Assignee: {taskStats.most_outstanding.name}</p>
               </>
             ) : (
-              <span className="text-3xl font-semibold text-gray-900 dark:text-white">0</span>
+              <div className="ff-stat-value">0</div>
             )}
           </div>
-        </div>
 
-        {/* Most Completed Tasks */}
-        <div className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Most Completed Tasks</h3>
-          <div className="mt-2">
+          {/* Most Completed Tasks */}
+          <div className="ff-card-stats">
+            <h3 className="ff-stat-label">Most Completed Tasks</h3>
             {taskStats.most_completed ? (
               <>
-                <span className="text-3xl font-semibold text-gray-900 dark:text-white">{taskStats.most_completed.tasks_completed}</span>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Assignee: {taskStats.most_completed.name}</p>
+                <div className="ff-stat-value">{taskStats.most_completed.tasks_completed}</div>
+                <p className="ff-muted-text mt-1">Assignee: {taskStats.most_completed.name}</p>
               </>
             ) : (
-              <span className="text-3xl font-semibold text-gray-900 dark:text-white">0</span>
+              <div className="ff-stat-value">0</div>
             )}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi, idx) => {
-          const config = KPI_CONFIG[idx];
-          if (!config) return null;
-          
-          const cardContent = (
-            <>
-              <div className="w-full">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{kpi.label}</h3>
-                <div className="mt-2">
-                  <span className="text-3xl font-semibold text-gray-900 dark:text-white">{kpi.count}</span>
+      <section className="ff-section">
+        <h2 className="ff-section-title">Key Performance Indicators</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {kpis.map((kpi, idx) => {
+            const config = KPI_CONFIG[idx];
+            if (!config) return null;
+            
+            const cardContent = (
+              <>
+                <div className="w-full">
+                  <h3 className="ff-stat-label">{kpi.label}</h3>
+                  <div className="ff-stat-value">{kpi.count}</div>
                 </div>
-              </div>
-            </>
-          );
-          
-          // All cards are now clickable - using Link instead of a
-          return (
-            <Link 
-              key={kpi.label} 
-              href={config.link || `/${config.table}`} 
-              className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
-            >
-              {cardContent}
-            </Link>
-          );
-        })}
-      </div>
+              </>
+            );
+            
+            // All cards are now clickable - using Link instead of a
+            return (
+              <Link 
+                key={kpi.label} 
+                href={config.link || `/${config.table}`} 
+                className="ff-card cursor-pointer"
+              >
+                {cardContent}
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Project Summaries */}
-      <div className="mt-8">
+      <section className="ff-section">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Project Summaries</h3>
-          <Link href="/projects" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All Projects</Link>
+          <h2 className="ff-section-title mb-0">Project Summaries</h2>
+          <Link href="/projects" className="ff-secondary-text hover:underline">View All Projects</Link>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="ff-grid-cards">
           {projectSummaries.map(project => (
-            <div key={project.id} className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900">
-              <Link href={`/projects/${project.id}`} className="text-lg font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
+            <div key={project.id} className="ff-card">
+              <Link href={`/projects/${project.id}`} className="ff-card-title hover:text-blue-600">
                 {project.name}
               </Link>
               
               <div className="mt-3 flex items-center">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Current Phase:</span>
-                <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded">
+                <span className="ff-muted-text">Current Phase:</span>
+                <span className="ml-2 ff-status-planning">
                   {project.current_phase}
                 </span>
               </div>
               
               <div className="mt-4">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pending Tasks</h4>
+                <h4 className="ff-secondary-text font-medium mb-2">Pending Tasks</h4>
                 {project.pending_tasks.length > 0 ? (
                   <ul className="space-y-3">
                     {project.pending_tasks.slice(0, 3).map(task => (
                       <li key={task.id} className="text-sm">
                         <div className="flex justify-between">
-                          <span className="font-medium text-gray-800 dark:text-gray-200">{task.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{task.days_assigned} days</span>
+                          <span className="ff-body-text font-medium">{task.name}</span>
+                          <span className="ff-muted-text">{task.days_assigned} days</span>
                         </div>
                         <div className="flex justify-between mt-1">
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Assignee: {task.assignee}</span>
+                          <span className="ff-muted-text">Assignee: {task.assignee}</span>
                           {task.delay_reason && (
                             <span className="text-xs text-red-500">{task.delay_reason}</span>
                           )}
@@ -459,161 +455,87 @@ export default function DashboardPage() {
                       </li>
                     ))}
                     {project.pending_tasks.length > 3 && (
-                      <li className="text-xs text-gray-500 dark:text-gray-400 italic">
+                      <li className="ff-muted-text italic">
                         +{project.pending_tasks.length - 3} more tasks
                       </li>
                     )}
                   </ul>
                 ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No pending tasks</p>
+                  <p className="ff-secondary-text">No pending tasks</p>
                 )}
               </div>
             </div>
           ))}
           
           {projectSummaries.length === 0 && (
-            <div className="col-span-full p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No projects found</p>
+            <div className="col-span-full ff-card text-center">
+              <p className="ff-secondary-text">No projects found</p>
             </div>
           )}
         </div>
-      </div>
-      
-      {/* Analytics Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        <Link href="/projects" className="lg:col-span-2 p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-base font-medium text-gray-900 dark:text-white">Project Progress</h3>
-            <div className="flex space-x-2">
-              <button className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md">Weekly</button>
-              <button className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-md">Monthly</button>
-            </div>
-          </div>
-          <div className="h-64 w-full flex items-end justify-between px-2">
-            {/* Simulated chart bars */}
-            <div className="flex flex-col items-center">
-              <div className="h-32 w-12 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Jan</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-48 w-12 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Feb</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-24 w-12 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Mar</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-56 w-12 bg-gray-900 dark:bg-gray-100 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Apr</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-40 w-12 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">May</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-20 w-12 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Jun</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="h-16 w-12 bg-gray-200 dark:bg-gray-700 rounded-sm"></div>
-              <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">Jul</span>
-            </div>
-          </div>
-        </Link>
-
-        <Link href="/projects" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
-          <h3 className="text-base font-medium text-gray-900 dark:text-white mb-6">Project Status</h3>
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Completed</span>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">65%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                <div className="bg-gray-900 dark:bg-gray-100 h-1 rounded-full" style={{ width: '65%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">In Progress</span>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">25%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                <div className="bg-gray-900 dark:bg-gray-100 h-1 rounded-full" style={{ width: '25%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pending</span>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">10%</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                <div className="bg-gray-900 dark:bg-gray-100 h-1 rounded-full" style={{ width: '10%' }}></div>
-              </div>
-            </div>
-          </div>
-        </Link>
-      </div>
+      </section>
 
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <Link href="/projects" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-medium text-gray-900 dark:text-white">Recent Projects</h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">View all</span>
-          </div>
-          {recentProjects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No recent projects found</p>
-              <span className="mt-3 px-4 py-2 bg-black dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-md transition-colors inline-block">
-                Create Project
-              </span>
+      <section className="ff-section">
+        <h2 className="ff-section-title">Recent Activity</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link href="/projects" className="ff-card cursor-pointer block">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="ff-card-title">Recent Projects</h3>
+              <span className="ff-secondary-text">View all</span>
             </div>
-          ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
-              {recentProjects.map((proj) => (
-                <div key={proj.id} className="py-3 flex justify-between items-center">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">{proj.project_name || `Project #${proj.id}`}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{proj.created_at?.slice(0, 10)}</p>
+            {recentProjects.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <p className="ff-secondary-text">No recent projects found</p>
+                <button className="mt-3 ff-button-primary">
+                  Create Project
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {recentProjects.map((proj) => (
+                  <div key={proj.id} className="py-3 flex justify-between items-center">
+                    <div>
+                      <h4 className="ff-body-text font-medium">{proj.project_name || `Project #${proj.id}`}</h4>
+                      <p className="ff-muted-text">{proj.created_at?.slice(0, 10)}</p>
+                    </div>
+                    <span className="ff-muted-text">View</span>
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">View</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Link>
+                ))}
+              </div>
+            )}
+          </Link>
 
-        <Link href="/stock_items" className="p-6 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 block">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-medium text-gray-900 dark:text-white">Stock Items</h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">View all</span>
-          </div>
-          {recentStockMovements.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No stock items found</p>
-              <span className="mt-3 px-4 py-2 bg-black dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-md transition-colors inline-block">
-                Manage Stock Items
-              </span>
+          <Link href="/stock_items" className="ff-card cursor-pointer block">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="ff-card-title">Stock Items</h3>
+              <span className="ff-secondary-text">View all</span>
             </div>
-          ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
-              {recentStockMovements.map((move) => (
-                <div key={move.id} className="py-3 flex justify-between items-center">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">{move.type || `Movement #${move.id}`}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{move.created_at?.slice(0, 10)}</p>
+            {recentStockMovements.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <p className="ff-secondary-text">No stock items found</p>
+                <button className="mt-3 ff-button-primary">
+                  Manage Stock Items
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {recentStockMovements.map((move) => (
+                  <div key={move.id} className="py-3 flex justify-between items-center">
+                    <div>
+                      <h4 className="ff-body-text font-medium">{move.type || `Movement #${move.id}`}</h4>
+                      <p className="ff-muted-text">{move.created_at?.slice(0, 10)}</p>
+                    </div>
+                    <span className="ff-status-active">
+                      {move.type === 'IN' ? 'Received' : 'Shipped'}
+                    </span>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                    {move.type === 'IN' ? 'Received' : 'Shipped'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Link>
-      </div>
+                ))}
+              </div>
+            )}
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

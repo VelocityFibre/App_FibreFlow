@@ -432,24 +432,26 @@ function ProjectsContent() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-        {customer ? `Projects for ${customer.name}` : "All Projects"}
-      </h2>
+    <div className="ff-page-container max-w-6xl mx-auto">
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">
+          {customer ? `Projects for ${customer.name}` : "All Projects"}
+        </h1>
+      </div>
       
       {/* Connection status message */}
       {connectionStatus && (
-        <div className={`mb-4 p-3 rounded ${connectionStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div className={`ff-card mb-6 ${connectionStatus.success ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
           {connectionStatus.message}
         </div>
       )}
 
       {customer && (
-        <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-800">
-          <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">
+        <div className="ff-card mb-6 bg-gray-50">
+          <h3 className="ff-card-title">
             {customer.client_name}
           </h3>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="ff-secondary-text">
             {customer.client_type && <div>Type: {customer.client_type}</div>}
             {customer.contact_information && (
               <div className="mt-2">Contact: {customer.contact_information}</div>
@@ -462,16 +464,15 @@ function ProjectsContent() {
       )}
 
       {/* Add new project form */}
-      <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800">
-        <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">
-          Add New Project
-        </h3>
+      <section className="ff-section">
+        <h2 className="ff-section-title">Add New Project</h2>
+        <div className="ff-card">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <input
               type="text"
               placeholder="Project Name *"
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="ff-input"
               value={newProject.name || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, name: e.target.value })
@@ -480,7 +481,7 @@ function ProjectsContent() {
           </div>
           <div>
             <select
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="ff-input"
               value={selectedProvince}
               onChange={(e) => {
                 setSelectedProvince(e.target.value);
@@ -503,7 +504,7 @@ function ProjectsContent() {
             <input
               type="text"
               placeholder="Region"
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="ff-input"
               value={newProject.region || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, region: e.target.value })
@@ -516,7 +517,7 @@ function ProjectsContent() {
             <input
               type="date"
               placeholder="Start Date"
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="ff-input"
               value={newProject.start_date || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, start_date: e.target.value })
@@ -525,7 +526,7 @@ function ProjectsContent() {
           </div>
           <div>
             <select
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="ff-input"
               value={newProject.location_id || ""}
               onChange={(e) =>
                 setNewProject({ ...newProject, location_id: e.target.value })
@@ -542,7 +543,7 @@ function ProjectsContent() {
           {!customerId && (
             <div className="md:col-span-3">
               <select
-                className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="ff-input"
                 value={newProject.customer_id || ""}
                 onChange={(e) =>
                   setNewProject({ ...newProject, customer_id: e.target.value })
@@ -573,10 +574,10 @@ function ProjectsContent() {
           </div>
           <div className={customerId ? "md:col-span-3" : ""}>
             <button
-              className={`px-4 py-2 rounded w-full transition-colors ${
+              className={`w-full ${
                 isSubmitting 
-                  ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed" 
-                  : "bg-black dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100"
+                  ? "bg-gray-400 cursor-not-allowed text-white px-6 py-2 rounded-lg" 
+                  : "ff-button-primary"
               }`}
               onClick={handleAddProject}
               disabled={isSubmitting}
@@ -585,81 +586,85 @@ function ProjectsContent() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      </section>
 
       {/* Projects list */}
-      {loading ? (
-        <p className="text-gray-700 dark:text-gray-300">Loading...</p>
-      ) : (
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full bg-white dark:bg-gray-800">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+      <section className="ff-section">
+        <h2 className="ff-section-title">Projects</h2>
+        {loading ? (
+          <p className="ff-secondary-text">Loading...</p>
+        ) : (
+          <div className="ff-table-container">
+            <table className="min-w-full">
+              <thead className="ff-table-header">
+                <tr>
+                  <th className="ff-table-header-cell">
                   Project Name
-                </th>
-                {!customer && (
-                  <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Customer
                   </th>
-                )}
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Province
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Region
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Start Date
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Location
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
-                </th>
+                  {!customer && (
+                    <th className="ff-table-header-cell">
+                      Customer
+                    </th>
+                  )}
+                  <th className="ff-table-header-cell">
+                    Province
+                  </th>
+                  <th className="ff-table-header-cell">
+                    Region
+                  </th>
+                  <th className="ff-table-header-cell">
+                    Start Date
+                  </th>
+                  <th className="ff-table-header-cell">
+                    Location
+                  </th>
+                  <th className="ff-table-header-cell">
+                    Actions
+                  </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {projects.map((project) => (
-                <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {project.name}
-                  </td>
-                  {!customer && (
-                    <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                      {project.customers?.client_name || "Unknown"}
+              <tbody>
+                {projects.map((project) => (
+                  <tr key={project.id} className="ff-table-row">
+                    <td className="ff-table-cell">
+                      {project.name}
                     </td>
-                  )}
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {provinces.find(p => p.region === project.region)?.name || "-"}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {project.region}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {project.start_date || "Not set"}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {project.location_id
-                      ? locations.find((l) => l.id === project.location_id)
-                          ?.location_name || project.location_id
-                      : "Not set"}
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    <Link
-                      href={`/projects/${project.id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      View
-                    </Link>
-                  </td>
+                    {!customer && (
+                      <td className="ff-table-cell">
+                        {project.customers?.client_name || "Unknown"}
+                      </td>
+                    )}
+                    <td className="ff-table-cell-secondary">
+                      {provinces.find(p => p.region === project.region)?.name || "-"}
+                    </td>
+                    <td className="ff-table-cell-secondary">
+                      {project.region}
+                    </td>
+                    <td className="ff-table-cell-secondary">
+                      {project.start_date || "Not set"}
+                    </td>
+                    <td className="ff-table-cell-secondary">
+                      {project.location_id
+                        ? locations.find((l) => l.id === project.location_id)
+                            ?.location_name || project.location_id
+                        : "Not set"}
+                    </td>
+                    <td className="ff-table-cell">
+                      <Link
+                        href={`/projects/${project.id}`}
+                        className="text-blue-600 hover:underline font-medium"
+                      >
+                        View
+                      </Link>
+                    </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

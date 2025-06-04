@@ -8,7 +8,17 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        gray: {
+          25: '#fafafa',
+        }
+      }
+    },
   },
+  safelist: [
+    // FibreFlow theme classes
+    { pattern: /^ff-/ },
+  ],
   plugins: [],
 };

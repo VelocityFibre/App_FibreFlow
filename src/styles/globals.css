@@ -159,3 +159,166 @@ body {
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
+
+/* FibreFlow Design System - Based on theme-test page */
+
+/* Page Layout */
+.ff-page-container {
+  @apply space-y-12;
+}
+
+.ff-page-header {
+  @apply border-b border-gray-100 pb-8 mb-12;
+}
+
+.ff-page-title {
+  @apply text-5xl font-light text-gray-900 mb-4;
+}
+
+.ff-page-subtitle {
+  @apply text-xl text-gray-600 font-light;
+}
+
+.ff-section {
+  @apply mb-20;
+}
+
+.ff-section-title {
+  @apply text-3xl font-light text-gray-900 mb-12;
+}
+
+/* Typography */
+.ff-heading-large {
+  @apply text-3xl font-light text-gray-900;
+}
+
+.ff-heading-medium {
+  @apply text-xl font-medium text-gray-900;
+}
+
+.ff-body-text {
+  @apply text-base text-gray-900;
+}
+
+.ff-secondary-text {
+  @apply text-sm text-gray-600;
+}
+
+.ff-muted-text {
+  @apply text-sm text-gray-500;
+}
+
+/* Cards */
+.ff-card {
+  @apply bg-white border border-gray-100 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300;
+}
+
+.ff-card-title {
+  @apply text-xl font-medium text-gray-900 mb-4;
+}
+
+.ff-card-content {
+  @apply text-gray-600 mb-6;
+}
+
+.ff-card-stats {
+  @apply bg-gray-50 border border-gray-100 rounded-xl p-8;
+}
+
+.ff-stat-value {
+  @apply text-2xl font-light text-gray-900;
+}
+
+.ff-stat-label {
+  @apply text-sm text-gray-600;
+}
+
+/* Buttons */
+.ff-button-primary {
+  @apply bg-gray-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors;
+}
+
+.ff-button-ghost {
+  @apply w-full text-left py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-gray-900;
+}
+
+/* Forms */
+.ff-input {
+  @apply w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-colors;
+}
+
+.ff-label {
+  @apply block text-sm font-medium text-gray-900 mb-2;
+}
+
+.ff-form-container {
+  @apply max-w-2xl bg-white border border-gray-100 rounded-xl p-8;
+}
+
+/* Tables */
+.ff-table-container {
+  @apply bg-white border border-gray-100 rounded-xl overflow-hidden;
+}
+
+.ff-table-header {
+  @apply bg-gray-50 border-b border-gray-100;
+}
+
+.ff-table-header-cell {
+  @apply text-left py-4 px-6 font-medium text-gray-900;
+}
+
+.ff-table-row {
+  @apply border-b border-gray-50 hover:bg-gray-50 transition-colors;
+}
+
+.ff-table-cell {
+  @apply py-4 px-6 text-gray-900;
+}
+
+.ff-table-cell-secondary {
+  @apply py-4 px-6 text-gray-600;
+}
+
+/* Status Badges */
+.ff-status-active {
+  @apply inline-flex px-3 py-1 rounded-full text-sm bg-green-100 text-green-800;
+}
+
+.ff-status-planning {
+  @apply inline-flex px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800;
+}
+
+.ff-status-pending {
+  @apply inline-flex px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800;
+}
+
+.ff-status-completed {
+  @apply inline-flex px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800;
+}
+
+/* Grid Layouts */
+.ff-grid-cards {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.ff-grid-stats {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-6;
+}
+
+/* Color Palette Classes */
+.ff-color-background {
+  background-color: #FFFFFF;
+}
+
+.ff-color-text-primary {
+  color: #1F2937;
+}
+
+.ff-color-accent {
+  color: #6B7280;
+}
+
+.ff-color-subtle {
+  background-color: #F3F4F6;
+}

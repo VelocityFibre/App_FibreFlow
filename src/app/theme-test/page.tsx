@@ -2,20 +2,20 @@
 
 export default function ThemeTestPage() {
   return (
-    <div className="space-y-12">
+    <div className="ff-page-container">
       {/* Page Header - Apple Style */}
-      <div className="border-b border-gray-100 pb-8 mb-12">
-        <h1 className="text-5xl font-light text-gray-900 mb-4">
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">
           Design System
         </h1>
-        <p className="text-xl text-gray-600 font-light">
+        <p className="ff-page-subtitle">
           FibreFlow's modern, clean design language.
         </p>
       </div>
         
         {/* Typography Showcase */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-light text-gray-900 mb-12">Typography</h2>
+        <section className="ff-section">
+          <h2 className="ff-section-title">Typography</h2>
           <div className="space-y-8">
             <div>
               <h1 className="text-4xl font-light text-gray-900 mb-2">Display Large</h1>
@@ -41,45 +41,45 @@ export default function ThemeTestPage() {
         </section>
 
         {/* Cards & Content Areas */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-light text-gray-900 mb-12">Content Cards</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="ff-section">
+          <h2 className="ff-section-title">Content Cards</h2>
+          <div className="ff-grid-cards">
             
             {/* Clean Card */}
-            <div className="bg-white border border-gray-100 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">Project Overview</h3>
-              <p className="text-gray-600 mb-6">Clean, minimal card design with subtle shadows and rounded corners.</p>
-              <button className="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors">
+            <div className="ff-card">
+              <h3 className="ff-card-title">Project Overview</h3>
+              <p className="ff-card-content">Clean, minimal card design with subtle shadows and rounded corners.</p>
+              <button className="ff-button-primary">
                 View Details
               </button>
             </div>
 
             {/* Stats Card */}
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-8">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">Statistics</h3>
+            <div className="ff-card-stats">
+              <h3 className="ff-card-title">Statistics</h3>
               <div className="space-y-4">
                 <div>
-                  <div className="text-2xl font-light text-gray-900">1,247</div>
-                  <div className="text-sm text-gray-600">Active Projects</div>
+                  <div className="ff-stat-value">1,247</div>
+                  <div className="ff-stat-label">Active Projects</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-light text-gray-900">94.8%</div>
-                  <div className="text-sm text-gray-600">Completion Rate</div>
+                  <div className="ff-stat-value">94.8%</div>
+                  <div className="ff-stat-label">Completion Rate</div>
                 </div>
               </div>
             </div>
 
             {/* Action Card */}
-            <div className="bg-white border border-gray-100 rounded-xl p-8">
-              <h3 className="text-xl font-medium text-gray-900 mb-4">Quick Actions</h3>
+            <div className="ff-card">
+              <h3 className="ff-card-title">Quick Actions</h3>
               <div className="space-y-3">
-                <button className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-gray-900">
+                <button className="ff-button-ghost">
                   Create New Project
                 </button>
-                <button className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-gray-900">
+                <button className="ff-button-ghost">
                   Import Data
                 </button>
-                <button className="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors text-gray-900">
+                <button className="ff-button-ghost">
                   Generate Report
                 </button>
               </div>
@@ -88,29 +88,29 @@ export default function ThemeTestPage() {
         </section>
 
         {/* Form Elements */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-light text-gray-900 mb-12">Form Elements</h2>
-          <div className="max-w-2xl bg-white border border-gray-100 rounded-xl p-8">
+        <section className="ff-section">
+          <h2 className="ff-section-title">Form Elements</h2>
+          <div className="ff-form-container">
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Project Name</label>
+                <label className="ff-label">Project Name</label>
                 <input 
                   type="text" 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-colors"
+                  className="ff-input"
                   placeholder="Enter project name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Description</label>
+                <label className="ff-label">Description</label>
                 <textarea 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-colors resize-none"
+                  className="ff-input resize-none"
                   rows={4}
                   placeholder="Project description..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Status</label>
-                <select className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-colors">
+                <label className="ff-label">Status</label>
+                <select className="ff-input">
                   <option>Active</option>
                   <option>Pending</option>
                   <option>Completed</option>
@@ -121,42 +121,42 @@ export default function ThemeTestPage() {
         </section>
 
         {/* Table Example */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-light text-gray-900 mb-12">Data Tables</h2>
-          <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+        <section className="ff-section">
+          <h2 className="ff-section-title">Data Tables</h2>
+          <div className="ff-table-container">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="ff-table-header">
                 <tr>
-                  <th className="text-left py-4 px-6 font-medium text-gray-900">Project</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-900">Status</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-900">Progress</th>
-                  <th className="text-left py-4 px-6 font-medium text-gray-900">Due Date</th>
+                  <th className="ff-table-header-cell">Project</th>
+                  <th className="ff-table-header-cell">Status</th>
+                  <th className="ff-table-header-cell">Progress</th>
+                  <th className="ff-table-header-cell">Due Date</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-gray-50 hover:bg-gray-25 transition-colors">
-                  <td className="py-4 px-6 text-gray-900">Fiber Installation - CBD</td>
-                  <td className="py-4 px-6">
-                    <span className="inline-flex px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">Active</span>
+                <tr className="ff-table-row">
+                  <td className="ff-table-cell">Fiber Installation - CBD</td>
+                  <td className="ff-table-cell">
+                    <span className="ff-status-active">Active</span>
                   </td>
-                  <td className="py-4 px-6 text-gray-600">75%</td>
-                  <td className="py-4 px-6 text-gray-600">Dec 15, 2024</td>
+                  <td className="ff-table-cell-secondary">75%</td>
+                  <td className="ff-table-cell-secondary">Dec 15, 2024</td>
                 </tr>
-                <tr className="border-b border-gray-50 hover:bg-gray-25 transition-colors">
-                  <td className="py-4 px-6 text-gray-900">Network Upgrade - Suburbs</td>
-                  <td className="py-4 px-6">
-                    <span className="inline-flex px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">Planning</span>
+                <tr className="ff-table-row">
+                  <td className="ff-table-cell">Network Upgrade - Suburbs</td>
+                  <td className="ff-table-cell">
+                    <span className="ff-status-planning">Planning</span>
                   </td>
-                  <td className="py-4 px-6 text-gray-600">25%</td>
-                  <td className="py-4 px-6 text-gray-600">Jan 30, 2025</td>
+                  <td className="ff-table-cell-secondary">25%</td>
+                  <td className="ff-table-cell-secondary">Jan 30, 2025</td>
                 </tr>
-                <tr className="hover:bg-gray-25 transition-colors">
-                  <td className="py-4 px-6 text-gray-900">Equipment Maintenance</td>
-                  <td className="py-4 px-6">
-                    <span className="inline-flex px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">Pending</span>
+                <tr className="ff-table-row">
+                  <td className="ff-table-cell">Equipment Maintenance</td>
+                  <td className="ff-table-cell">
+                    <span className="ff-status-pending">Pending</span>
                   </td>
-                  <td className="py-4 px-6 text-gray-600">0%</td>
-                  <td className="py-4 px-6 text-gray-600">Nov 20, 2024</td>
+                  <td className="ff-table-cell-secondary">0%</td>
+                  <td className="ff-table-cell-secondary">Nov 20, 2024</td>
                 </tr>
               </tbody>
             </table>
@@ -165,8 +165,8 @@ export default function ThemeTestPage() {
 
         {/* Color Palette */}
         <section>
-          <h2 className="text-3xl font-light text-gray-900 mb-12">Color Palette</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <h2 className="ff-section-title">Color Palette</h2>
+          <div className="ff-grid-stats">
             <div className="text-center">
               <div className="w-20 h-20 bg-white border-2 border-gray-200 rounded-lg mb-3 mx-auto"></div>
               <p className="text-sm text-gray-600">Background</p>
