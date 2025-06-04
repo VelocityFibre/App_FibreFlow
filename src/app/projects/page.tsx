@@ -432,7 +432,7 @@ function ProjectsContent() {
   }
 
   return (
-    <div className="ff-page-container max-w-6xl mx-auto">
+    <div className="ff-page-container">
       <div className="ff-page-header">
         <h1 className="ff-page-title">
           {customer ? `Projects for ${customer.name}` : "All Projects"}

@@ -246,25 +246,34 @@ export default function MyTasksPage() {
   }
 
   if (!currentUser) {
-    return <div className="p-6">Loading user information...</div>;
+    return (
+      <div className="ff-page-container">
+        <div className="ff-card text-center">
+          <p className="ff-secondary-text">Loading user information...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Tasks</h1>
+    <div className="ff-page-container">
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">My Tasks</h1>
+        <p className="ff-page-subtitle">Manage and complete your assigned tasks</p>
+      </div>
       
       {newlyAssignedTask && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div className="ff-card mb-6 bg-blue-50 border-blue-200">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100">New Task Automatically Assigned!</h3>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+              <h3 className="ff-heading-medium text-blue-900">New Task Automatically Assigned!</h3>
+              <p className="ff-secondary-text text-blue-700 mt-1">
                 The next task in the sequence has been assigned to you. You can reassign it to another team member if needed.
               </p>
             </div>
             <button
               onClick={() => setNewlyAssignedTask(null)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+              className="text-blue-600 hover:text-blue-800 font-medium"
             >
               ✕
             </button>
@@ -273,45 +282,47 @@ export default function MyTasksPage() {
       )}
       
       {loading ? (
-        <div className="text-center py-10">Loading your tasks...</div>
+        <div className="ff-card text-center">
+          <p className="ff-secondary-text">Loading your tasks...</p>
+        </div>
       ) : tasks.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <p className="text-lg text-gray-600 dark:text-gray-300">You don&apos;t have any tasks assigned to you.</p>
+        <div className="ff-card text-center">
+          <p className="ff-secondary-text">You don&apos;t have any tasks assigned to you.</p>
         </div>
       ) : (
         <div className="space-y-6">
           {tasks.map(task => (
             <div 
               key={task.id} 
-              className={`shadow-md rounded-lg p-6 border ${
+              className={`ff-card ${
                 newlyAssignedTask === task.id 
-                  ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-300 dark:border-blue-700 ring-2 ring-blue-400' 
-                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                  ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-400' 
+                  : ''
               }`}>
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold">{task.task.title || task.task.name || `Task ${task.task_id}`}</h3>
+                    <h3 className="ff-card-title">{task.task.title || task.task.name || `Task ${task.task_id}`}</h3>
                     {newlyAssignedTask === task.id && (
                       <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">New</span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Project: <Link href={`/projects/${task.project_phase.project.id}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                  <p className="ff-secondary-text mt-1">
+                    Project: <Link href={`/projects/${task.project_phase.project.id}`} className="text-blue-600 hover:underline font-medium">
                       {task.project_phase.project.project_name}
                     </Link>
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="ff-secondary-text">
                     Phase: {task.project_phase.phase.name}
                   </p>
                   {task.task.description && (
-                    <p className="mt-2 text-gray-700 dark:text-gray-300">{task.task.description}</p>
+                    <p className="mt-2 ff-body-text">{task.task.description}</p>
                   )}
                   <div className="mt-3">
-                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                      task.status === "completed" ? "bg-green-100 text-green-800" :
-                      task.status === "in_progress" ? "bg-blue-100 text-blue-800" :
-                      "bg-gray-100 text-gray-800"
+                    <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
+                      task.status === "completed" ? "ff-status-completed" :
+                      task.status === "in_progress" ? "ff-status-active" :
+                      "ff-status-pending"
                     }`}>
                       {task.status === "not_started" ? "Not Started" :
                        task.status === "in_progress" ? "In Progress" :
@@ -325,7 +336,7 @@ export default function MyTasksPage() {
                     <>
                       <button
                         onClick={() => completeTask(task.id)}
-                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
                       >
                         Complete
                       </button>
@@ -333,7 +344,7 @@ export default function MyTasksPage() {
                       {!reassigning[task.id] ? (
                         <button
                           onClick={() => startReassign(task.id)}
-                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                          className="ff-button-primary"
                         >
                           Reassign
                         </button>
@@ -348,13 +359,13 @@ export default function MyTasksPage() {
                           </div>
                           <button
                             onClick={() => reassignTask(task.id)}
-                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                            className="ff-button-primary"
                           >
                             Save
                           </button>
                           <button
                             onClick={() => setReassigning({ ...reassigning, [task.id]: false })}
-                            className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                            className="px-4 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors"
                           >
                             Cancel
                           </button>

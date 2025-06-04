@@ -257,65 +257,92 @@ export default function DashboardPage() {
       const summaries: ProjectSummary[] = [];
 
       for (const project of projects || []) {
-        // Get project phases
-        const { data: phases, error: phasesError } = await supabase
-          .from('project_phases')
-          .select('id, phase_id, status, phase:phases(name)')
-          .eq('project_id', project.id);
+        try {
+          // Get project phases
+          const { data: phases, error: phasesError } = await supabase
+            .from('project_phases')
+            .select('id, phase_id, status, phase:phases(name)')
+            .eq('project_id', project.id);
 
-        if (phasesError) {
-          console.error(`Error fetching phases for project ${project.id}:`, phasesError);
-          continue;
+          if (phasesError) {
+            console.error(`Error fetching phases for project ${project.id}:`, {
+              message: phasesError.message,
+              details: phasesError.details,
+              hint: phasesError.hint,
+              code: phasesError.code
+            });
+            continue;
+          }
+
+          // Find the current phase (first non-completed phase)
+          const currentPhase = phases?.find(p => p.status === 'in_progress' || p.status === 'active') || phases?.[0];
+          // Safely access the phase name using type assertion
+          const phaseName = currentPhase?.phase as unknown as { name: string } | null;
+          const currentPhaseName = phaseName?.name || 'No active phase';
+
+          // Get pending tasks for this project
+          const phaseIds = phases?.map(p => p.id) || [];
+          if (phaseIds.length === 0) {
+            console.log(`No phases found for project ${project.id}, skipping task fetch`);
+            // Still add the project summary without tasks
+            summaries.push({
+              id: project.id,
+              name: project.project_name || 'Unnamed Project',
+              current_phase: 'No active phase',
+              pending_tasks: []
+            });
+            continue;
+          }
+
+          const { data: tasks, error: tasksError } = await supabase
+            .from('project_tasks')
+            .select('id, task_id, status, assigned_to, created_at, updated_at')
+            .in('project_phase_id', phaseIds)
+            .in('status', ['not_started', 'pending', 'in_progress']);
+
+          if (tasksError) {
+            console.error(`Error fetching tasks for project ${project.id}:`, {
+              message: tasksError.message,
+              details: tasksError.details,
+              hint: tasksError.hint,
+              code: tasksError.code
+            });
+            continue;
+          }
+
+          // Process tasks to get days assigned and assignee info
+          const pendingTasks = tasks?.map(task => {
+            // Calculate days since assignment
+            const assignedDate = task.created_at ? new Date(task.created_at) : new Date();
+            const today = new Date();
+            const diffTime = Math.abs(today.getTime() - assignedDate.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return {
+              id: task.id,
+              name: `Task #${task.task_id || task.id}`,
+              assignee: task.assigned_to ? (staffMap[task.assigned_to] || 'Unknown') : 'Unassigned',
+              days_assigned: diffDays,
+              delay_reason: diffDays > 7 ? 'Requires follow-up' : undefined
+            };
+          }) || [];
+
+          summaries.push({
+            id: project.id,
+            name: project.project_name || `Project #${project.id}`,
+            current_phase: currentPhaseName,
+            pending_tasks: pendingTasks
+          });
+        } catch (projectError) {
+          console.error(`Error processing project ${project.id}:`, projectError);
+          // Add project with minimal info on error
+          summaries.push({
+            id: project.id,
+            name: project.project_name || `Project #${project.id}`,
+            current_phase: 'Error loading phase',
+            pending_tasks: []
+          });
         }
-
-        // Find the current phase (first non-completed phase)
-        const currentPhase = phases?.find(p => p.status === 'in_progress' || p.status === 'active') || phases?.[0];
-        // Safely access the phase name using type assertion
-        const phaseName = currentPhase?.phase as unknown as { name: string } | null;
-        const currentPhaseName = phaseName?.name || 'No active phase';
-
-        // Get pending tasks for this project
-        const phaseIds = phases?.map(p => p.id) || [];
-        if (phaseIds.length === 0) continue;
-
-        const { data: tasks, error: tasksError } = await supabase
-          .from('project_tasks')
-          .select('id, task_id, status, assigned_to, created_at, updated_at, task:tasks(name, title)')
-          .in('project_phase_id', phaseIds)
-          .in('status', ['not_started', 'pending', 'in_progress']);
-
-        if (tasksError) {
-          console.error(`Error fetching tasks for project ${project.id}:`, tasksError);
-          continue;
-        }
-
-        // Process tasks to get days assigned and assignee info
-        const pendingTasks = tasks?.map(task => {
-          // Calculate days since assignment
-          const assignedDate = task.created_at ? new Date(task.created_at) : new Date();
-          const today = new Date();
-          const diffTime = Math.abs(today.getTime() - assignedDate.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
-          // Safely access task name/title
-          const taskObj = task.task as { name?: string; title?: string } | undefined;
-          const taskName = taskObj?.name || taskObj?.title || `Task #${task.task_id}`;
-
-          return {
-            id: task.id,
-            name: taskName,
-            assignee: task.assigned_to ? (staffMap[task.assigned_to] || 'Unknown') : 'Unassigned',
-            days_assigned: diffDays,
-            delay_reason: diffDays > 7 ? 'Requires follow-up' : undefined
-          };
-        }) || [];
-
-        summaries.push({
-          id: project.id,
-          name: project.project_name || `Project #${project.id}`,
-          current_phase: currentPhaseName,
-          pending_tasks: pendingTasks
-        });
       }
 
       setProjectSummaries(summaries);

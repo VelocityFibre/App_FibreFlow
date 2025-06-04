@@ -374,78 +374,114 @@ export default function PhasesTasksAdmin() {
   }
   
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Phases & Tasks Management</h1>
-      
+    <div className="ff-page-container">
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">Phases & Tasks Management</h1>
+        <p className="ff-page-subtitle">Manage project phases and tasks for your workflow</p>
+      </div>
+
+      {/* Quick Setup Section */}
+      <section className="ff-section">
+        <h2 className="ff-section-title">Quick Setup</h2>
+        <div className="ff-card">
+          <div className="flex flex-col md:flex-row gap-4">
+            <button
+              onClick={setupDefaultPhases}
+              disabled={setupLoading}
+              className="ff-button-primary disabled:opacity-50"
+            >
+              {setupLoading ? "Setting up..." : "Create Default Phases & Tasks"}
+            </button>
+            <button
+              onClick={createPhaseOneSequentialTasks}
+              disabled={setupLoading}
+              className="ff-button-primary disabled:opacity-50"
+            >
+              {setupLoading ? "Creating..." : "Add Phase 1 Sequential Tasks"}
+            </button>
+          </div>
+          {setupResult && (
+            <div className={`mt-4 p-4 rounded-lg ${setupResult.includes('Error') ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-green-50 text-green-800 border border-green-200'}`}>
+              {setupResult}
+            </div>
+          )}
+        </div>
+      </section>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Phases Management */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Phases</h2>
+          <h2 className="ff-section-title">Phases</h2>
           
           {/* Add Phase Form */}
-          <form onSubmit={handleAddPhase} className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800">
-            <h3 className="text-lg font-medium mb-3">Add New Phase</h3>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name *
-              </label>
-              <input
-                type="text"
-                value={newPhase.name}
-                onChange={(e) => setNewPhase({ ...newPhase, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                required
-              />
+          <form onSubmit={handleAddPhase} className="ff-card mb-6">
+            <h3 className="ff-card-title">Add New Phase</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="ff-label">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={newPhase.name}
+                  onChange={(e) => setNewPhase({ ...newPhase, name: e.target.value })}
+                  className="ff-input"
+                  required
+                />
+              </div>
+              <div>
+                <label className="ff-label">
+                  Description
+                </label>
+                <textarea
+                  value={newPhase.description}
+                  onChange={(e) => setNewPhase({ ...newPhase, description: e.target.value })}
+                  className="ff-input"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="ff-label">
+                  Order
+                </label>
+                <input
+                  type="number"
+                  value={newPhase.order_no}
+                  onChange={(e) => setNewPhase({ ...newPhase, order_no: parseInt(e.target.value) })}
+                  className="ff-input"
+                />
+              </div>
+              <button
+                type="submit"
+                className="ff-button-primary"
+              >
+                Add Phase
+              </button>
             </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
-              </label>
-              <textarea
-                value={newPhase.description}
-                onChange={(e) => setNewPhase({ ...newPhase, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                rows={3}
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Order
-              </label>
-              <input
-                type="number"
-                value={newPhase.order_no}
-                onChange={(e) => setNewPhase({ ...newPhase, order_no: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
-            >
-              Add Phase
-            </button>
           </form>
           
           {/* Phases List */}
           {loading ? (
-            <p className="text-center py-4">Loading phases...</p>
+            <div className="ff-card text-center">
+              <p className="ff-secondary-text">Loading phases...</p>
+            </div>
           ) : phases.length === 0 ? (
-            <p className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded">No phases found. Add your first phase or use the quick setup.</p>
+            <div className="ff-card text-center">
+              <p className="ff-secondary-text">No phases found. Add your first phase above.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {phases.map((phase) => (
-                <div key={phase.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800">
+                <div key={phase.id} className="ff-card">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-semibold">{phase.name}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{phase.description}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Order: {phase.order_no}</p>
+                      <h4 className="ff-heading-medium">{phase.name}</h4>
+                      <p className="ff-secondary-text">{phase.description}</p>
+                      <p className="ff-muted-text mt-1">Order: {phase.order_no}</p>
                     </div>
                     <button
                       onClick={() => handleDeletePhase(phase.id)}
-                      className="text-red-600 hover:text-red-800 text-sm"
+                      className="text-red-600 hover:text-red-800 text-sm font-medium"
                     >
                       Delete
                     </button>
@@ -458,65 +494,69 @@ export default function PhasesTasksAdmin() {
         
         {/* Tasks Management */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Tasks</h2>
+          <h2 className="ff-section-title">Tasks</h2>
           
           {/* Add Task Form */}
-          <form onSubmit={handleAddTask} className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800">
-            <h3 className="text-lg font-medium mb-3">Add New Task</h3>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title *
-              </label>
-              <input
-                type="text"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
-              </label>
-              <textarea
-                value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                rows={3}
-              />
-            </div>
-            <div className="mb-3">
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200">
-                <p className="text-sm">Tasks are now created independently of phases. You can assign tasks to phases when creating a project.</p>
+          <form onSubmit={handleAddTask} className="ff-card mb-6">
+            <h3 className="ff-card-title">Add New Task</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="ff-label">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  className="ff-input"
+                  required
+                />
               </div>
+              <div>
+                <label className="ff-label">
+                  Description
+                </label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  className="ff-input"
+                  rows={3}
+                />
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                <p className="text-sm text-yellow-800">Tasks are created independently of phases. You can assign tasks to phases when creating a project.</p>
+              </div>
+              <button
+                type="submit"
+                className="ff-button-primary"
+              >
+                Add Task
+              </button>
             </div>
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
-            >
-              Add Task
-            </button>
           </form>
           
           {/* Tasks List */}
           {loading ? (
-            <p className="text-center py-4">Loading tasks...</p>
+            <div className="ff-card text-center">
+              <p className="ff-secondary-text">Loading tasks...</p>
+            </div>
           ) : tasks.length === 0 ? (
-            <p className="text-center py-4 bg-gray-50 dark:bg-gray-800 rounded">No tasks found. Add your first task above.</p>
+            <div className="ff-card text-center">
+              <p className="ff-secondary-text">No tasks found. Add your first task above.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {tasks.map((task) => (
-                <div key={task.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800">
+                <div key={task.id} className="ff-card">
                   <div className="flex justify-between items-start">
                     <div className="w-full">
-                      <h4 className="font-semibold">{task.title}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{task.description}</p>
+                      <h4 className="ff-heading-medium">{task.title}</h4>
+                      <p className="ff-secondary-text">{task.description}</p>
                       
                       {/* Task Status */}
-                      <div className="mt-3 flex flex-col space-y-2">
-                        <div className="flex items-center">
-                          <span className="text-sm font-medium mr-2 w-24">Status:</span>
+                      <div className="mt-4">
+                        <div className="flex items-center space-x-3">
+                          <label className="ff-label mb-0">Status:</label>
                           <select 
                             value={task.status || 'planning'}
                             onChange={async (e) => {
@@ -527,22 +567,18 @@ export default function PhasesTasksAdmin() {
                                 .eq("id", task.id);
                               fetchPhasesAndTasks();
                             }}
-                            className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="ff-input max-w-xs"
                           >
                             <option value="planning">Planning</option>
                             <option value="submitted">Submitted</option>
                             <option value="completed">Completed</option>
                           </select>
                         </div>
-                        
-                        {/* Notes field removed as it doesn't exist in the schema */}
                       </div>
-                      
-                      {/* Order number display removed as it doesn't exist in the schema */}
                     </div>
                     <button
                       onClick={() => handleDeleteTask(task.id)}
-                      className="text-red-600 hover:text-red-800 text-sm ml-4"
+                      className="text-red-600 hover:text-red-800 text-sm font-medium ml-4"
                     >
                       Delete
                     </button>

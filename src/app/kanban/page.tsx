@@ -1,23 +1,37 @@
 "use client";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+
+interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'done';
+  step?: string;
+  order?: number;
+  assigned_to?: string;
+  due_date?: string;
+  project_id?: string;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+}
 
 const STATUSES = [
-  { key: "todo", label: "To Do", color: "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100" },
-  { key: "in_progress", label: "In Progress", color: "bg-yellow-200 text-yellow-900 dark:bg-yellow-700 dark:text-yellow-100" },
-  { key: "done", label: "Done", color: "bg-green-200 text-green-900 dark:bg-green-700 dark:text-green-100" },
+  { key: "todo", label: "To Do", color: "bg-blue-50 text-blue-800 border-blue-200" },
+  { key: "in_progress", label: "In Progress", color: "bg-yellow-50 text-yellow-800 border-yellow-200" },
+  { key: "done", label: "Done", color: "bg-green-50 text-green-800 border-green-200" },
 ];
 
-import { Dialog } from "@headlessui/react";
-
 export default function KanbanPage() {
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [editTask, setEditTask] = useState<any | null>(null);
-  const [form, setForm] = useState<any>({
+  const [editTask, setEditTask] = useState<Task | null>(null);
+  const [form, setForm] = useState<Partial<Task>>({
     title: "",
     description: "",
     step: "",
@@ -28,213 +42,334 @@ export default function KanbanPage() {
   });
 
   useEffect(() => {
-    async function fetchTasks() {
-      const { data } = await supabase
-        .from("tasks")
-        .select("id, title, description, step, order, status")
-        .order("step")
-        .order("order");
-      setTasks(data || []);
+    // Demo data - no database calls
+    setLoading(true);
+    
+    // Simulate loading delay
+    setTimeout(() => {
+      // Set demo project
+      setProject({
+        id: "demo-project",
+        name: "Fiber Installation Project",
+        description: "High-speed fiber optic network deployment"
+      });
+      
+      // Set demo tasks
+      setTasks([]);
       setLoading(false);
-    }
-    fetchTasks();
+    }, 500);
   }, []);
 
-  // Group by step
-  const steps = Array.from(new Set(tasks.map(t => t.step))).filter(Boolean);
-  const grouped = steps.map(step => ({
-    step,
-    tasks: tasks.filter(t => t.step === step)
-  }));
-
-  // Progress calculation for each step
-  const getStepProgress = (step: string) => {
-    const stepTasks = tasks.filter(t => t.step === step);
-    const completed = stepTasks.filter(t => t.status === "done").length;
-    return { completed, total: stepTasks.length };
-  };
-
-  // Drag and drop handler
-  const onDragEnd = async (result: DropResult) => {
-    if (!result.destination) return;
-    const { source, destination, draggableId } = result;
-    // Only allow status change, not reordering within column
-    if (source.droppableId === destination.droppableId) return;
-    const taskId = parseInt(draggableId, 10);
-    const newStatus = destination.droppableId;
-    setUpdating(true);
-    // Optimistically update UI
-    setTasks(prev => prev.map(task => task.id === taskId ? { ...task, status: newStatus } : task));
-    // Persist to Supabase
-    await supabase.from("tasks").update({ status: newStatus }).eq("id", taskId);
-    setUpdating(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Demo mode - just update local state
+    try {
+      if (editTask) {
+        // Update existing task
+        setTasks(prev => prev.map(t => t.id === editTask.id ? { ...t, ...form } as Task : t));
+      } else {
+        // Create new task with demo ID
+        const newTask: Task = {
+          ...form,
+          id: Date.now(), // Demo ID
+        } as Task;
+        setTasks(prev => [...prev, newTask]);
+      }
+      
+      setShowModal(false);
+      setForm({
+        title: '',
+        description: '',
+        step: '',
+        order: 1,
+        status: 'todo',
+        assigned_to: '',
+        due_date: ''
+      });
+    } catch (error) {
+      console.error('Error saving task:', error);
+    }
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold">Kanban Board</h2>
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="mb-8 border-b pb-6">
+        <h1 className="text-4xl font-light text-gray-900 mb-2">
+          {project ? `${project.name} - Kanban Board` : "Kanban Board"}
+        </h1>
+        <p className="text-lg text-gray-600 mb-4">
+          {project?.description || "Manage tasks across different stages"}
+        </p>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => { setShowModal(true); setEditTask(null); setForm({ title: '', description: '', step: steps[0] || '', order: 1, status: 'todo', assigned_to: '', due_date: '' }); }}
-        >+ Add Task</button>
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          onClick={() => { 
+            setShowModal(true); 
+            setEditTask(null); 
+            setForm({ 
+              title: '', 
+              description: '', 
+              step: '', 
+              order: 1, 
+              status: 'todo', 
+              assigned_to: '', 
+              due_date: ''
+            }); 
+          }}
+        >
+          + Add Task
+        </button>
       </div>
+
       {loading ? (
-        <div className="text-gray-500">Loading tasks...</div>
-      ) : (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="space-y-12">
-            {grouped.map(({ step, tasks: stepTasks }) => {
-              const { completed, total } = getStepProgress(step);
-              return (
-                <div key={step}>
-                  <div className="flex items-center gap-4 mb-2">
-                    <h3 className="text-xl font-semibold">{step}</h3>
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded h-2 relative">
-                      <div
-                        className="bg-green-500 h-2 rounded"
-                        style={{ width: `${total ? (completed / total) * 100 : 0}%` }}
-                      />
-                      <span className="absolute right-2 top-[-22px] text-xs text-gray-500">{completed}/{total} done</span>
+        <div className="text-center py-12">
+          <div className="text-gray-500">Loading tasks...</div>
+        </div>
+      ) : tasks.length === 0 ? (
+        <div className="space-y-8">
+          {/* Planning Phase Demo */}
+          <div className="bg-white border rounded-lg p-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-medium text-gray-900 mb-2">Planning Phase</h3>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-600">Progress</span>
+                <span className="text-gray-500 text-sm">2/5 completed</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: '40%' }} />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {STATUSES.map(status => (
+                <div key={status.key} className="space-y-3 p-4 rounded-lg border-2 border-dashed border-gray-200 min-h-[200px]">
+                  <h4 className="text-lg font-medium text-center pb-2 border-b">{status.label}</h4>
+                  
+                  {/* Sample tasks for demo */}
+                  {status.key === 'todo' && (
+                    <>
+                      <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                        <h5 className="font-medium mb-2">Site Survey</h5>
+                        <p className="text-gray-600 text-sm mb-2">Conduct initial site assessment</p>
+                        <div className="flex justify-between items-center">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">John D.</span>
+                          <span className="text-red-600 text-xs">Due: Today</span>
+                        </div>
+                      </div>
+                      <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                        <h5 className="font-medium mb-2">Requirements Gathering</h5>
+                        <p className="text-gray-600 text-sm">Document project requirements</p>
+                      </div>
+                    </>
+                  )}
+                  
+                  {status.key === 'in_progress' && (
+                    <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                      <h5 className="font-medium mb-2">Feasibility Study</h5>
+                      <p className="text-gray-600 text-sm mb-2">Assess technical and financial feasibility</p>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Sarah M.</span>
                     </div>
-                  </div>
-                  <div className="flex gap-6">
-                    {STATUSES.map(status => (
-                      <Droppable droppableId={status.key} key={status.key} direction="vertical">
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            className={`flex-1 min-h-[80px] space-y-3 p-2 rounded transition border ${snapshot.isDraggingOver ? 'bg-blue-50 dark:bg-blue-900' : ''}`}
-                          >
-                            <div className="font-medium mb-2 px-2">{status.label}</div>
-                            {stepTasks.filter(t => t.status === status.key).map((task, idx) => (
-                              <Draggable draggableId={task.id.toString()} index={idx} key={task.id}>
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className={`rounded p-4 shadow ${status.color} border border-gray-300 dark:border-gray-700 transition ${snapshot.isDragging ? 'ring-2 ring-blue-400' : ''}`}
-                                    style={{ ...provided.draggableProps.style, opacity: updating ? 0.6 : 1 }}
-                                    onDoubleClick={() => { setEditTask(task); setForm(task); setShowModal(true); }}
-                                  >
-                                    <div className="font-semibold flex justify-between items-center">
-                                      <span>{task.title}</span>
-                                      {task.assigned_to && <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">{task.assigned_to}</span>}
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-1">{task.description}</div>
-                                    {task.due_date && <div className="text-xs text-red-500 mt-1">Due: {task.due_date}</div>}
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
+                  )}
+                  
+                  {status.key === 'done' && (
+                    <>
+                      <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                        <h5 className="font-medium mb-2">Project Kickoff</h5>
+                        <p className="text-gray-600 text-sm">Initial project meeting completed</p>
+                      </div>
+                      <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                        <h5 className="font-medium mb-2">Team Assignment</h5>
+                        <p className="text-gray-600 text-sm">Core team members assigned</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Implementation Phase */}
+          <div className="bg-white border rounded-lg p-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-medium text-gray-900 mb-2">Implementation Phase</h3>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-600">Progress</span>
+                <span className="text-gray-500 text-sm">1/4 completed</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" style={{ width: '25%' }} />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {STATUSES.map(status => (
+                <div key={status.key} className="space-y-3 p-4 rounded-lg border-2 border-dashed border-gray-200 min-h-[200px]">
+                  <h4 className="text-lg font-medium text-center pb-2 border-b">{status.label}</h4>
+                  
+                  {status.key === 'todo' && (
+                    <>
+                      <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                        <h5 className="font-medium mb-2">Fiber Installation</h5>
+                        <p className="text-gray-600 text-sm">Install fiber optic cables</p>
+                      </div>
+                      <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                        <h5 className="font-medium mb-2">Equipment Setup</h5>
+                        <p className="text-gray-600 text-sm">Configure network equipment</p>
+                      </div>
+                    </>
+                  )}
+                  
+                  {status.key === 'in_progress' && (
+                    <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                      <h5 className="font-medium mb-2">Network Testing</h5>
+                      <p className="text-gray-600 text-sm mb-2">Testing connectivity and speeds</p>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Tech Team</span>
+                    </div>
+                  )}
+                  
+                  {status.key === 'done' && (
+                    <div className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}>
+                      <h5 className="font-medium mb-2">Permits Obtained</h5>
+                      <p className="text-gray-600 text-sm">All necessary permits secured</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* User Created Tasks */}
+          {tasks.length > 0 && (
+            <div className="bg-white border rounded-lg p-6">
+              <h3 className="text-xl font-medium text-gray-900 mb-6">Your Tasks</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {STATUSES.map(status => (
+                  <div key={status.key} className="space-y-3 p-4 rounded-lg border-2 border-dashed border-gray-200 min-h-[200px]">
+                    <h4 className="text-lg font-medium text-center pb-2 border-b">{status.label}</h4>
+                    {tasks.filter(t => t.status === status.key).map((task) => (
+                      <div
+                        key={task.id}
+                        className={`p-4 rounded-lg border-2 ${status.color} hover:shadow-md transition-all cursor-pointer`}
+                        onClick={() => { setEditTask(task); setForm(task); setShowModal(true); }}
+                      >
+                        <h5 className="font-medium mb-2">{task.title}</h5>
+                        {task.description && (
+                          <p className="text-gray-600 text-sm mb-2">{task.description}</p>
                         )}
-                      </Droppable>
+                        <div className="flex justify-between items-center">
+                          {task.assigned_to && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              {task.assigned_to}
+                            </span>
+                          )}
+                          {task.due_date && (
+                            <span className="text-red-600 text-xs">Due: {new Date(task.due_date).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </DragDropContext>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div>User tasks would appear here</div>
       )}
-      {/* Modal for create/edit task */}
-      <Dialog open={showModal} onClose={() => setShowModal(false)} className="fixed z-50 inset-0">
-        <div className="flex items-center justify-center min-h-screen">
-          <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-          <div className="bg-white dark:bg-gray-900 rounded shadow-lg p-8 z-10 w-full max-w-md relative">
-            <Dialog.Title className="text-lg font-bold mb-4">{editTask ? 'Edit Task' : 'Add Task'}</Dialog.Title>
-            <form
-              onSubmit={async e => {
-                e.preventDefault();
-                setUpdating(true);
-                if (editTask) {
-                  // Update
-                  await supabase.from('tasks').update(form).eq('id', editTask.id);
-                  setTasks(prev => prev.map(t => t.id === editTask.id ? { ...t, ...form } : t));
-                } else {
-                  // Insert
-                  const { data } = await supabase.from('tasks').insert([form]).select();
-                  if (data && data[0]) setTasks(prev => [...prev, data[0]]);
-                }
-                setShowModal(false);
-                setUpdating(false);
-              }}
-              className="space-y-4"
-            >
-              <input
-                className="w-full border rounded px-3 py-2"
-                placeholder="Title"
-                value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                required
-              />
-              <textarea
-                className="w-full border rounded px-3 py-2"
-                placeholder="Description"
-                value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              />
-              <div className="flex gap-2">
-                <select
-                  className="border rounded px-2 py-1 flex-1"
-                  value={form.step}
-                  onChange={e => setForm(f => ({ ...f, step: e.target.value }))}
-                  required
-                >
-                  {steps.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+
+      {/* Simple Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
+            <h2 className="text-xl font-medium text-gray-900 mb-6">
+              {editTask ? 'Edit Task' : 'Add New Task'}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Task Title</label>
                 <input
-                  type="number"
-                  className="border rounded px-2 py-1 w-16"
-                  min={1}
-                  value={form.order}
-                  onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value, 10) }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter task title"
+                  value={form.title || ''}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   required
                 />
               </div>
-              <div className="flex gap-2">
-                <select
-                  className="border rounded px-2 py-1 flex-1"
-                  value={form.status}
-                  onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                  required
-                >
-                  {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                </select>
-                <input
-                  className="border rounded px-2 py-1 flex-1"
-                  placeholder="Assignee"
-                  value={form.assigned_to}
-                  onChange={e => setForm(f => ({ ...f, assigned_to: e.target.value }))}
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Task description (optional)"
+                  rows={3}
+                  value={form.description || ''}
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 />
               </div>
-              <input
-                type="date"
-                className="w-full border rounded px-3 py-2"
-                value={form.due_date || ''}
-                onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
-              />
-              <div className="flex gap-2 justify-end">
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Step/Phase</label>
+                  <input
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Planning, Design"
+                    value={form.step || ''}
+                    onChange={e => setForm(f => ({ ...f, step: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <select
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={form.status || 'todo'}
+                    onChange={e => setForm(f => ({ ...f, status: e.target.value as Task['status'] }))}
+                  >
+                    {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+                  <input
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Assignee name"
+                    value={form.assigned_to || ''}
+                    onChange={e => setForm(f => ({ ...f, assigned_to: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={form.due_date || ''}
+                    onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 justify-end pt-4 border-t">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100"
+                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   onClick={() => setShowModal(false)}
-                >Cancel</button>
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-                  disabled={updating}
-                >{editTask ? 'Save' : 'Create'}</button>
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {editTask ? 'Update Task' : 'Create Task'}
+                </button>
               </div>
             </form>
           </div>
         </div>
-      </Dialog>
+      )}
     </div>
   );
 }
-

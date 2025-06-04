@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { ChevronDownIcon, PlusIcon, MagnifyingGlassIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface Material {
   id: string;
@@ -153,11 +153,10 @@ export default function MaterialsPage() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [sortBy, setSortBy] = useState<keyof Material>("itemNo");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const filteredAndSortedMaterials = useMemo(() => {
-    let filtered = materials.filter(material => {
+    const filtered = materials.filter(material => {
       const matchesSearch = 
         material.itemNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         material.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -203,10 +202,10 @@ export default function MaterialsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'in_stock': return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30';
-      case 'low_stock': return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/30';
-      case 'out_of_stock': return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
-      default: return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-900/30';
+      case 'in_stock': return 'text-green-700 bg-green-100';
+      case 'low_stock': return 'text-yellow-700 bg-yellow-100';
+      case 'out_of_stock': return 'text-red-700 bg-red-100';
+      default: return 'text-gray-700 bg-gray-100';
     }
   };
 
@@ -258,7 +257,6 @@ export default function MaterialsPage() {
     
     setMaterials(prev => [...prev, newMaterial]);
     setEditingId(newMaterial.id);
-    setShowAddForm(false);
   };
 
   const stockSummary = useMemo(() => {
@@ -271,12 +269,12 @@ export default function MaterialsPage() {
   }, [materials]);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Materials Management</h1>
+    <div className="ff-page-container">
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">Materials Management</h1>
         <button
           onClick={addMaterial}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          className="ff-button-primary flex items-center gap-2"
         >
           <PlusIcon className="h-5 w-5" />
           Add Material
@@ -284,28 +282,30 @@ export default function MaterialsPage() {
       </div>
 
       {/* Stock Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Materials</h3>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stockSummary.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="ff-card">
+          <h3 className="ff-card-subtitle">Total Materials</h3>
+          <p className="text-3xl font-light text-gray-900 mt-2">{stockSummary.total}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">In Stock</h3>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stockSummary.inStock}</p>
+        <div className="ff-card">
+          <h3 className="ff-card-subtitle">In Stock</h3>
+          <p className="text-3xl font-light text-green-600 mt-2">{stockSummary.inStock}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Low Stock</h3>
-          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stockSummary.lowStock}</p>
+        <div className="ff-card">
+          <h3 className="ff-card-subtitle">Low Stock</h3>
+          <p className="text-3xl font-light text-yellow-600 mt-2">{stockSummary.lowStock}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Out of Stock</h3>
-          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stockSummary.outOfStock}</p>
+        <div className="ff-card">
+          <h3 className="ff-card-subtitle">Out of Stock</h3>
+          <p className="text-3xl font-light text-red-600 mt-2">{stockSummary.outOfStock}</p>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <section className="ff-section">
+        <h2 className="ff-section-title">Search & Filters</h2>
+        <div className="ff-card">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div className="relative">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -314,7 +314,7 @@ export default function MaterialsPage() {
               placeholder="Search materials..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="ff-input pl-10"
             />
           </div>
 
@@ -322,7 +322,7 @@ export default function MaterialsPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="ff-input"
           >
             {CATEGORIES.map(category => (
               <option key={category} value={category}>{category}</option>
@@ -333,7 +333,7 @@ export default function MaterialsPage() {
           <select
             value={selectedSupplier}
             onChange={(e) => setSelectedSupplier(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="ff-input"
           >
             {SUPPLIERS.map(supplier => (
               <option key={supplier} value={supplier}>{supplier}</option>
@@ -344,7 +344,7 @@ export default function MaterialsPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="ff-input"
           >
             {STATUS_FILTERS.map(status => (
               <option key={status} value={status}>{status}</option>
@@ -359,128 +359,130 @@ export default function MaterialsPage() {
               setSelectedSupplier("All");
               setSelectedStatus("All");
             }}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="ff-button-secondary"
           >
             Clear Filters
           </button>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Materials Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+      <section className="ff-section">
+        <h2 className="ff-section-title">Inventory</h2>
+        <div className="ff-table-container">
+          <table className="min-w-full">
+            <thead className="ff-table-header">
               <tr>
                 <th 
                   onClick={() => handleSort('itemNo')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="ff-table-header-cell cursor-pointer"
                 >
                   Item No. {sortBy === 'itemNo' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   onClick={() => handleSort('description')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="ff-table-header-cell cursor-pointer"
                 >
                   Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   onClick={() => handleSort('category')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="ff-table-header-cell cursor-pointer"
                 >
                   Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   onClick={() => handleSort('currentStock')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="ff-table-header-cell cursor-pointer"
                 >
                   Stock {sortBy === 'currentStock' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="ff-table-header-cell">
                   Min/Max
                 </th>
                 <th 
                   onClick={() => handleSort('supplier')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="ff-table-header-cell cursor-pointer"
                 >
                   Supplier {sortBy === 'supplier' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   onClick={() => handleSort('status')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="ff-table-header-cell cursor-pointer"
                 >
                   Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="ff-table-header-cell">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody>
               {filteredAndSortedMaterials.map((material) => (
-                <tr key={material.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <tr key={material.id} className="ff-table-row">
+                  <td className="ff-table-cell">
                     {editingId === material.id ? (
                       <input
                         type="text"
                         value={material.itemNo}
                         onChange={(e) => updateMaterial(material.id, 'itemNo', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="ff-input w-full"
                       />
                     ) : (
                       material.itemNo
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                  <td className="ff-table-cell">
                     {editingId === material.id ? (
                       <div className="space-y-2">
                         <input
                           type="text"
                           value={material.description}
                           onChange={(e) => updateMaterial(material.id, 'description', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input w-full"
                         />
                         <input
                           type="number"
                           step="0.01"
                           value={material.unitCost}
                           onChange={(e) => updateMaterial(material.id, 'unitCost', parseFloat(e.target.value))}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input w-full"
                         />
                       </div>
                     ) : (
                       <div>
                         <div className="font-medium">{material.description}</div>
-                        <div className="text-gray-500 dark:text-gray-400 text-xs">
+                        <div className="ff-secondary-text text-xs">
                           ${material.unitCost.toFixed(2)} per {material.unit}
                         </div>
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td className="ff-table-cell">
                     {editingId === material.id ? (
                       <select
                         value={material.category}
                         onChange={(e) => updateMaterial(material.id, 'category', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="ff-input w-full"
                       >
                         {CATEGORIES.filter(cat => cat !== "All").map(category => (
                           <option key={category} value={category}>{category}</option>
                         ))}
                       </select>
                     ) : (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                      <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                         {material.category}
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td className="ff-table-cell">
                     {editingId === material.id ? (
                       <input
                         type="number"
                         value={material.currentStock}
                         onChange={(e) => updateMaterial(material.id, 'currentStock', parseInt(e.target.value))}
-                        className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="ff-input w-full"
                       />
                     ) : (
                       <div className="flex items-center">
@@ -491,25 +493,25 @@ export default function MaterialsPage() {
                           <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mr-1" />
                         )}
                         <span className="font-medium">{material.currentStock}</span>
-                        <span className="text-gray-500 dark:text-gray-400 ml-1">{material.unit}</span>
+                        <span className="ff-secondary-text ml-1">{material.unit}</span>
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="ff-table-cell-secondary">
                     {editingId === material.id ? (
                       <div className="space-y-1">
                         <input
                           type="number"
                           value={material.minStock}
                           onChange={(e) => updateMaterial(material.id, 'minStock', parseInt(e.target.value))}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                          className="ff-input w-full text-xs"
                           placeholder="Min"
                         />
                         <input
                           type="number"
                           value={material.maxStock}
                           onChange={(e) => updateMaterial(material.id, 'maxStock', parseInt(e.target.value))}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                          className="ff-input w-full text-xs"
                           placeholder="Max"
                         />
                       </div>
@@ -517,13 +519,13 @@ export default function MaterialsPage() {
                       `${material.minStock} / ${material.maxStock}`
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td className="ff-table-cell">
                     {editingId === material.id ? (
                       <div className="space-y-1">
                         <select
                           value={material.supplier}
                           onChange={(e) => updateMaterial(material.id, 'supplier', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                          className="ff-input w-full text-xs"
                         >
                           {SUPPLIERS.filter(sup => sup !== "All").map(supplier => (
                             <option key={supplier} value={supplier}>{supplier}</option>
@@ -533,34 +535,34 @@ export default function MaterialsPage() {
                           type="text"
                           value={material.location}
                           onChange={(e) => updateMaterial(material.id, 'location', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                          className="ff-input w-full text-xs"
                           placeholder="Location"
                         />
                       </div>
                     ) : (
                       <div>
                         <div className="font-medium">{material.supplier}</div>
-                        <div className="text-gray-500 dark:text-gray-400 text-xs">{material.location}</div>
+                        <div className="ff-secondary-text text-xs">{material.location}</div>
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(material.status)}`}>
+                  <td className="ff-table-cell">
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(material.status)}`}>
                       {getStatusText(material.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="ff-table-cell">
                     {editingId === material.id ? (
                       <div className="flex space-x-2">
                         <button 
                           onClick={() => handleSave(material.id)}
-                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                          className="text-green-600 hover:text-green-800 font-medium"
                         >
                           Save
                         </button>
                         <button 
                           onClick={handleCancel}
-                          className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                          className="text-gray-600 hover:text-gray-800 font-medium"
                         >
                           Cancel
                         </button>
@@ -569,11 +571,11 @@ export default function MaterialsPage() {
                       <div className="flex space-x-2">
                         <button 
                           onClick={() => handleEdit(material.id)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="text-blue-600 hover:text-blue-800 font-medium"
                         >
                           Edit
                         </button>
-                        <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                        <button className="text-green-600 hover:text-green-800 font-medium">
                           Reorder
                         </button>
                       </div>
@@ -587,10 +589,10 @@ export default function MaterialsPage() {
 
         {filteredAndSortedMaterials.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">No materials found matching your filters.</p>
+            <p className="ff-secondary-text">No materials found matching your filters.</p>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

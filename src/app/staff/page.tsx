@@ -115,136 +115,147 @@ export default function StaffPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-        Staff Management
-      </h2>
-
-      {/* Add new staff form */}
-      <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800">
-        <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">
-          Add New Staff Member
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Name *"
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newStaff.name}
-              onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })}
-            />
-          </div>
-          <div>
-            <input
-              type="email"
-              placeholder="Email"
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newStaff.email}
-              onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Role"
-              className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={newStaff.role}
-              onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
-            />
-          </div>
-          <div>
-            <button
-              className="bg-black dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded w-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-              onClick={handleAdd}
-            >
-              Add Staff
-            </button>
-          </div>
-        </div>
+    <div className="space-y-12">
+      <div className="border-b border-border pb-8 mb-12">
+        <h1 className="text-5xl font-light text-foreground mb-4">Staff Management</h1>
+        <p className="text-xl text-muted-foreground font-light">Manage your team members and their assignments</p>
       </div>
 
-      {/* Staff list */}
-      {loading ? (
-        <p className="text-gray-700 dark:text-gray-300">Loading...</p>
-      ) : staff.length === 0 ? (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-center">
-          <p className="text-yellow-800 dark:text-yellow-200 mb-2">
-            No staff members found. Add your first staff member above to enable task assignments.
-          </p>
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            Staff members are required for assigning project managers and task assignees.
-          </p>
+      {/* Add new staff form */}
+      <section className="mb-20">
+        <div className="bg-card border border-border rounded-xl p-8 hover:shadow-lg transition-shadow duration-300">
+          <h2 className="text-3xl font-light text-foreground mb-12">Add New Staff Member</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+              <input
+                type="text"
+                placeholder="Name *"
+                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                value={newStaff.name}
+                onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                value={newStaff.email}
+                onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Role"
+                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                value={newStaff.role}
+                onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
+              />
+            </div>
+            <div>
+              <button
+                className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md"
+                onClick={handleAdd}
+              >
+                Add Staff
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full bg-white dark:bg-gray-800">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="py-2 px-4 border-b border-gray-200 dark:border-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {staff.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {member.id}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {member.name}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {member.email || "-"}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                    {member.role || "-"}
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        member.is_active !== false
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                      }`}
-                    >
-                      {member.is_active !== false ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    <button
-                      onClick={() => toggleActive(member.id, member.is_active !== false)}
-                      className="text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      {member.is_active !== false ? "Deactivate" : "Activate"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      </section>
 
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Note</h4>
-        <p className="text-sm text-blue-800 dark:text-blue-200">
+      {/* Staff list */}
+      <section className="mb-20">
+        <h2 className="text-3xl font-light text-foreground mb-12">Team Members</h2>
+        {loading ? (
+          <div className="bg-card border border-border rounded-xl p-8">
+            <p className="text-muted-foreground text-center">Loading staff members...</p>
+          </div>
+        ) : staff.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <h3 className="text-xl font-medium text-foreground mb-4">No Staff Members Yet</h3>
+              <p className="text-muted-foreground mb-2">
+                Add your first staff member above to enable task assignments.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Staff members are required for assigning project managers and task assignees.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="py-4 px-6 text-left text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="py-4 px-6 text-left text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {staff.map((member) => (
+                    <tr key={member.id} className="hover:bg-muted/10 transition-colors duration-150">
+                      <td className="py-4 px-6 text-sm text-muted-foreground">
+                        {member.id}
+                      </td>
+                      <td className="py-4 px-6 text-sm font-medium text-foreground">
+                        {member.name}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-muted-foreground">
+                        {member.email || "-"}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-muted-foreground">
+                        {member.role || "-"}
+                      </td>
+                      <td className="py-4 px-6 text-sm">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs font-medium rounded-full ${
+                            member.is_active !== false
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {member.is_active !== false ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-sm">
+                        <button
+                          onClick={() => toggleActive(member.id, member.is_active !== false)}
+                          className="text-primary hover:opacity-75 font-medium transition-opacity duration-150"
+                        >
+                          {member.is_active !== false ? "Deactivate" : "Activate"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <div className="bg-accent/20 border border-border rounded-xl p-8">
+        <h3 className="text-xl font-medium text-foreground mb-4">Important Note</h3>
+        <p className="text-muted-foreground">
           Staff members added here will appear in the assignee dropdowns when creating projects and assigning tasks.
           Make sure to add at least one staff member before creating projects with assignments.
         </p>

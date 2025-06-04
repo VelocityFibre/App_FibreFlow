@@ -92,140 +92,185 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Customers</h2>
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <input
-            type="text"
-            placeholder="Client Name *"
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.client_name}
-            onChange={e => setNewCustomer({ ...newCustomer, client_name: e.target.value })}
-          />
-        </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Client Type"
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.client_type}
-            onChange={e => setNewCustomer({ ...newCustomer, client_type: e.target.value })}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <textarea
-            placeholder="Contact Information"
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.contact_information}
-            onChange={e => setNewCustomer({ ...newCustomer, contact_information: e.target.value })}
-            rows={3}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <textarea
-            placeholder="SLA Terms"
-            className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            value={newCustomer.sla_terms}
-            onChange={e => setNewCustomer({ ...newCustomer, sla_terms: e.target.value })}
-            rows={3}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <button
-            className="bg-black dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded-md w-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-            onClick={handleAdd}
-          >Add Customer</button>
-        </div>
+    <div className="space-y-12">
+      <div className="border-b border-border pb-8 mb-12">
+        <h1 className="text-5xl font-light text-foreground mb-4">Customers</h1>
+        <p className="text-xl text-muted-foreground font-light">Manage your customer relationships and service agreements</p>
       </div>
-      {loading ? (
-        <p className="text-gray-600 dark:text-gray-300">Loading customers...</p>
-      ) : customers.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-300 mb-2">No customers found</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Add your first customer using the form above</p>
+
+      {/* Add new customer form */}
+      <section className="mb-20">
+        <div className="bg-card border border-border rounded-xl p-12 hover:shadow-lg transition-shadow duration-300">
+          <h2 className="text-3xl font-light text-foreground mb-12">Add New Customer</h2>
+          <div className="max-w-4xl">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <label className="ff-label">Client Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter client name"
+                    className="ff-input"
+                    value={newCustomer.client_name}
+                    onChange={e => setNewCustomer({ ...newCustomer, client_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="ff-label">Client Type</label>
+                  <input
+                    type="text"
+                    placeholder="Enter client type"
+                    className="ff-input"
+                    value={newCustomer.client_type}
+                    onChange={e => setNewCustomer({ ...newCustomer, client_type: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="ff-label">Contact Information</label>
+                <textarea
+                  placeholder="Enter contact details"
+                  className="ff-input resize-none"
+                  value={newCustomer.contact_information}
+                  onChange={e => setNewCustomer({ ...newCustomer, contact_information: e.target.value })}
+                  rows={4}
+                />
+              </div>
+              <div>
+                <label className="ff-label">SLA Terms</label>
+                <textarea
+                  placeholder="Enter service level agreement terms"
+                  className="ff-input resize-none"
+                  value={newCustomer.sla_terms}
+                  onChange={e => setNewCustomer({ ...newCustomer, sla_terms: e.target.value })}
+                  rows={4}
+                />
+              </div>
+              <div className="pt-4">
+                <button
+                  className="ff-button-primary px-8 py-3"
+                  onClick={handleAdd}
+                >
+                  Add Customer
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      ) : (
-        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Client Name</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Client Type</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Contact Info</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">SLA Terms</th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-            {customers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <input
-                      type="text"
-                      value={customer.client_name}
-                      onChange={e => handleEditField(customer.id, "client_name", e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  ) : (
-                    customer.client_name
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <input
-                      type="text"
-                      value={customer.client_type || ''}
-                      onChange={e => handleEditField(customer.id, "client_type", e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  ) : (
-                    customer.client_type || '-'
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <textarea
-                      value={customer.contact_information || ''}
-                      onChange={e => handleEditField(customer.id, "contact_information", e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      rows={2}
-                    />
-                  ) : (
-                    <div className="max-w-xs truncate">
-                      {customer.contact_information || '-'}
-                    </div>
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <textarea
-                      value={customer.sla_terms || ''}
-                      onChange={e => handleEditField(customer.id, "sla_terms", e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      rows={2}
-                    />
-                  ) : (
-                    <div className="max-w-xs truncate">
-                      {customer.sla_terms || '-'}
-                    </div>
-                  )}
-                </td>
-                <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                  {editing === customer.id ? (
-                    <>
-                      <button className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors mr-2" onClick={() => handleSave(customer.id)}>Save</button>
-                      <button className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors" onClick={() => setEditing(null)}>Cancel</button>
-                    </>
-                  ) : (
-                    <button className="bg-black dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-md text-xs font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors" onClick={() => setEditing(customer.id)}>Edit</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      </section>
+      <section className="mb-20">
+        <h2 className="text-3xl font-light text-foreground mb-12">Customer Directory</h2>
+        {loading ? (
+          <div className="bg-card border border-border rounded-xl p-8">
+            <p className="text-muted-foreground text-center">Loading customers...</p>
+          </div>
+        ) : customers.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <h3 className="text-xl font-medium text-foreground mb-4">No Customers Yet</h3>
+              <p className="text-muted-foreground mb-2">Add your first customer using the form above</p>
+              <p className="text-sm text-muted-foreground">Customers help you organize projects and track service agreements</p>
+            </div>
+          </div>
+        ) : (
+          <div className="ff-table-container">
+            <table className="w-full">
+              <thead className="ff-table-header">
+                <tr>
+                  <th className="ff-table-header-cell">Client Name</th>
+                  <th className="ff-table-header-cell">Client Type</th>
+                  <th className="ff-table-header-cell">Contact Info</th>
+                  <th className="ff-table-header-cell">SLA Terms</th>
+                  <th className="ff-table-header-cell">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.map((customer) => (
+                  <tr key={customer.id} className="ff-table-row">
+                    <td className="ff-table-cell">
+                      {editing === customer.id ? (
+                        <input
+                          type="text"
+                          value={customer.client_name}
+                          onChange={e => handleEditField(customer.id, "client_name", e.target.value)}
+                          className="ff-input text-sm"
+                        />
+                      ) : (
+                        customer.client_name
+                      )}
+                    </td>
+                    <td className="ff-table-cell-secondary">
+                      {editing === customer.id ? (
+                        <input
+                          type="text"
+                          value={customer.client_type || ''}
+                          onChange={e => handleEditField(customer.id, "client_type", e.target.value)}
+                          className="ff-input text-sm"
+                        />
+                      ) : (
+                        customer.client_type || '-'
+                      )}
+                    </td>
+                    <td className="ff-table-cell-secondary">
+                      {editing === customer.id ? (
+                        <textarea
+                          value={customer.contact_information || ''}
+                          onChange={e => handleEditField(customer.id, "contact_information", e.target.value)}
+                          className="ff-input text-sm resize-none"
+                          rows={2}
+                        />
+                      ) : (
+                        <div className="max-w-xs truncate">
+                          {customer.contact_information || '-'}
+                        </div>
+                      )}
+                    </td>
+                    <td className="ff-table-cell-secondary">
+                      {editing === customer.id ? (
+                        <textarea
+                          value={customer.sla_terms || ''}
+                          onChange={e => handleEditField(customer.id, "sla_terms", e.target.value)}
+                          className="ff-input text-sm resize-none"
+                          rows={2}
+                        />
+                      ) : (
+                        <div className="max-w-xs truncate">
+                          {customer.sla_terms || '-'}
+                        </div>
+                      )}
+                    </td>
+                    <td className="ff-table-cell">
+                      {editing === customer.id ? (
+                        <div className="space-x-2">
+                          <button 
+                            className="ff-button-primary text-xs px-3 py-1" 
+                            onClick={() => handleSave(customer.id)}
+                          >
+                            Save
+                          </button>
+                          <button 
+                            className="ff-button-ghost text-xs px-3 py-1" 
+                            onClick={() => setEditing(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          className="ff-button-ghost text-xs px-3 py-1" 
+                          onClick={() => setEditing(customer.id)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

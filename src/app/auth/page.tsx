@@ -136,59 +136,60 @@ export default function AuthPage() {
     setIsEditing(false);
   };
 
-  const getRoleColor = (role: string) => {
+  const getRoleStatusBadge = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-      case 'manager': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-      case 'technician': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      case 'viewer': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+      case 'admin': return 'ff-status-pending'; // Red-ish for admin
+      case 'manager': return 'ff-status-planning'; // Blue for manager
+      case 'technician': return 'ff-status-active'; // Green for technician
+      case 'viewer': return 'ff-status-completed'; // Gray for viewer
+      default: return 'ff-status-completed';
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      case 'inactive': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'suspended': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+      case 'active': return 'ff-status-active';
+      case 'inactive': return 'ff-status-pending';
+      case 'suspended': return 'ff-status-pending';
+      default: return 'ff-status-completed';
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your account settings and preferences</p>
+    <div className="ff-page-container">
+      {/* Header */}
+      <div className="ff-page-header">
+        <h1 className="ff-page-title">User Settings</h1>
+        <p className="ff-page-subtitle">Manage your account settings and preferences</p>
       </div>
 
       {/* Profile Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+      <div className="ff-card mb-6">
         <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-            <UserIcon className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+            <UserIcon className="h-8 w-8 text-gray-500" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{user.name}</h2>
-            <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+            <h2 className="ff-heading-large">{user.name}</h2>
+            <p className="ff-secondary-text">{user.email}</p>
             <div className="flex items-center space-x-3 mt-2">
-              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+              <span className={`${getRoleStatusBadge(user.role)}`}>
                 {ROLES.find(r => r.value === user.role)?.label}
               </span>
-              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
+              <span className={`${getStatusBadge(user.status)}`}>
                 {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
               </span>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Last login</p>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{user.lastLogin}</p>
+            <p className="ff-muted-text">Last login</p>
+            <p className="ff-body-text">{user.lastLogin}</p>
           </div>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div className="border-b border-gray-100 mb-6">
         <nav className="flex space-x-8">
           {[
             { key: 'profile', label: 'Profile', icon: UserIcon },
@@ -200,10 +201,10 @@ export default function AuthPage() {
             <button
               key={key}
               onClick={() => setActiveTab(key as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 activeTab === key
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-gray-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -214,15 +215,15 @@ export default function AuthPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="ff-card">
         {activeTab === 'profile' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Profile Information</h3>
+              <h3 className="ff-card-title">Profile Information</h3>
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="ff-button-primary"
                 >
                   Edit Profile
                 </button>
@@ -230,13 +231,13 @@ export default function AuthPage() {
                 <div className="space-x-3">
                   <button
                     onClick={handleSave}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="ff-button-primary"
                   >
                     Save Changes
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
@@ -246,107 +247,95 @@ export default function AuthPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Full Name
-                </label>
+                <label className="ff-label">Full Name</label>
                 {isEditing ? (
                   <input
                     type="text"
                     value={editedUser.name}
                     onChange={(e) => setEditedUser({ ...editedUser, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="ff-input"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.name}</p>
+                  <p className="ff-body-text">{user.name}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address
-                </label>
+                <label className="ff-label">Email Address</label>
                 {isEditing ? (
                   <input
                     type="email"
                     value={editedUser.email}
                     onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="ff-input"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.email}</p>
+                  <p className="ff-body-text">{user.email}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Role
-                </label>
+                <label className="ff-label">Role</label>
                 {isEditing ? (
                   <select
                     value={editedUser.role}
                     onChange={(e) => setEditedUser({ ...editedUser, role: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="ff-input"
                   >
                     {ROLES.map(role => (
                       <option key={role.value} value={role.value}>{role.label}</option>
                     ))}
                   </select>
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{ROLES.find(r => r.value === user.role)?.label}</p>
+                  <p className="ff-body-text">{ROLES.find(r => r.value === user.role)?.label}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Department
-                </label>
+                <label className="ff-label">Department</label>
                 {isEditing ? (
                   <select
                     value={editedUser.department}
                     onChange={(e) => setEditedUser({ ...editedUser, department: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="ff-input"
                   >
                     {DEPARTMENTS.map(dept => (
                       <option key={dept} value={dept}>{dept}</option>
                     ))}
                   </select>
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.department}</p>
+                  <p className="ff-body-text">{user.department}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Location
-                </label>
+                <label className="ff-label">Location</label>
                 {isEditing ? (
                   <select
                     value={editedUser.location}
                     onChange={(e) => setEditedUser({ ...editedUser, location: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="ff-input"
                   >
                     {LOCATIONS.map(loc => (
                       <option key={loc} value={loc}>{loc}</option>
                     ))}
                   </select>
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.location}</p>
+                  <p className="ff-body-text">{user.location}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Phone Number
-                </label>
+                <label className="ff-label">Phone Number</label>
                 {isEditing ? (
                   <input
                     type="tel"
                     value={editedUser.phone}
                     onChange={(e) => setEditedUser({ ...editedUser, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="ff-input"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.phone}</p>
+                  <p className="ff-body-text">{user.phone}</p>
                 )}
               </div>
             </div>
@@ -355,22 +344,20 @@ export default function AuthPage() {
 
         {activeTab === 'security' && (
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Security Settings</h3>
+            <h3 className="ff-card-title mb-6">Security Settings</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Password Section */}
-              <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
-                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Password</h4>
+              <div className="border-b border-gray-100 pb-6">
+                <h4 className="ff-heading-medium mb-4">Password</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Current Password
-                    </label>
+                    <label className="ff-label">Current Password</label>
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter current password"
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="ff-input pr-10"
                       />
                       <button
                         type="button"
@@ -386,27 +373,25 @@ export default function AuthPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      New Password
-                    </label>
+                    <label className="ff-label">New Password</label>
                     <input
                       type="password"
                       placeholder="Enter new password"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="ff-input"
                     />
                   </div>
                 </div>
-                <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                <button className="mt-4 ff-button-primary">
                   Update Password
                 </button>
               </div>
 
               {/* Two-Factor Authentication */}
-              <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <div className="border-b border-gray-100 pb-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white">Two-Factor Authentication</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Add an extra layer of security to your account</p>
+                    <h4 className="ff-heading-medium">Two-Factor Authentication</h4>
+                    <p className="ff-secondary-text">Add an extra layer of security to your account</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -415,23 +400,21 @@ export default function AuthPage() {
                       onChange={(e) => setSecuritySettings({...securitySettings, twoFactorEnabled: e.target.checked})}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-500"></div>
                   </label>
                 </div>
               </div>
 
               {/* Session Settings */}
               <div>
-                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Session Settings</h4>
+                <h4 className="ff-heading-medium mb-4">Session Settings</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Session Timeout (minutes)
-                    </label>
+                    <label className="ff-label">Session Timeout (minutes)</label>
                     <select
                       value={securitySettings.sessionTimeout}
                       onChange={(e) => setSecuritySettings({...securitySettings, sessionTimeout: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="ff-input"
                     >
                       <option value={15}>15 minutes</option>
                       <option value={30}>30 minutes</option>
@@ -440,13 +423,11 @@ export default function AuthPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Password Expiry (days)
-                    </label>
+                    <label className="ff-label">Password Expiry (days)</label>
                     <select
                       value={securitySettings.passwordExpiry}
                       onChange={(e) => setSecuritySettings({...securitySettings, passwordExpiry: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="ff-input"
                     >
                       <option value={30}>30 days</option>
                       <option value={60}>60 days</option>
@@ -463,7 +444,7 @@ export default function AuthPage() {
 
         {activeTab === 'notifications' && (
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Notification Preferences</h3>
+            <h3 className="ff-card-title mb-6">Notification Preferences</h3>
             
             <div className="space-y-6">
               {Object.entries({
@@ -476,8 +457,8 @@ export default function AuthPage() {
               }).map(([key, label]) => (
                 <div key={key} className="flex justify-between items-center">
                   <div>
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white">{label}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="ff-heading-medium">{label}</h4>
+                    <p className="ff-secondary-text">
                       {key === 'emailNotifications' && 'Receive email notifications for important updates'}
                       {key === 'taskAssignments' && 'Get notified when tasks are assigned to you'}
                       {key === 'projectUpdates' && 'Receive updates about projects you\'re involved in'}
@@ -496,7 +477,7 @@ export default function AuthPage() {
                       })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-500"></div>
                   </label>
                 </div>
               ))}
@@ -506,17 +487,15 @@ export default function AuthPage() {
 
         {activeTab === 'preferences' && (
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">System Preferences</h3>
+            <h3 className="ff-card-title mb-6">System Preferences</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Theme
-                </label>
+                <label className="ff-label">Theme</label>
                 <select
                   value={preferences.theme}
                   onChange={(e) => setPreferences({...preferences, theme: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="ff-input"
                 >
                   <option value="system">System Default</option>
                   <option value="light">Light</option>
@@ -525,13 +504,11 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Language
-                </label>
+                <label className="ff-label">Language</label>
                 <select
                   value={preferences.language}
                   onChange={(e) => setPreferences({...preferences, language: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="ff-input"
                 >
                   <option value="en">English</option>
                   <option value="af">Afrikaans</option>
@@ -540,13 +517,11 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Timezone
-                </label>
+                <label className="ff-label">Timezone</label>
                 <select
                   value={preferences.timezone}
                   onChange={(e) => setPreferences({...preferences, timezone: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="ff-input"
                 >
                   <option value="Africa/Johannesburg">Africa/Johannesburg (SAST)</option>
                   <option value="Africa/Cape_Town">Africa/Cape_Town (SAST)</option>
@@ -555,13 +530,11 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Date Format
-                </label>
+                <label className="ff-label">Date Format</label>
                 <select
                   value={preferences.dateFormat}
                   onChange={(e) => setPreferences({...preferences, dateFormat: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="ff-input"
                 >
                   <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
@@ -570,13 +543,11 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Time Format
-                </label>
+                <label className="ff-label">Time Format</label>
                 <select
                   value={preferences.timeFormat}
                   onChange={(e) => setPreferences({...preferences, timeFormat: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="ff-input"
                 >
                   <option value="24h">24 Hour</option>
                   <option value="12h">12 Hour (AM/PM)</option>
@@ -585,7 +556,7 @@ export default function AuthPage() {
             </div>
 
             <div className="mt-6">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              <button className="ff-button-primary">
                 Save Preferences
               </button>
             </div>
@@ -595,10 +566,10 @@ export default function AuthPage() {
         {activeTab === 'users' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">User Management</h3>
+              <h3 className="ff-card-title">User Management</h3>
               <button
                 onClick={() => setShowAddUser(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                className="ff-button-primary flex items-center gap-2"
               >
                 <UserIcon className="h-4 w-4" />
                 Add New User
@@ -608,20 +579,20 @@ export default function AuthPage() {
             {/* Users List */}
             <div className="space-y-4 mb-8">
               {users.map((u) => (
-                <div key={u.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div key={u.id} className="border border-gray-100 rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                        <UserIcon className="h-6 w-6 text-gray-500" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">{u.name}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{u.email}</p>
+                        <h4 className="ff-heading-medium">{u.name}</h4>
+                        <p className="ff-secondary-text">{u.email}</p>
                         <div className="flex items-center space-x-2 mt-1">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(u.role)}`}>
+                          <span className={`${getRoleStatusBadge(u.role)}`}>
                             {ROLES.find(r => r.value === u.role)?.label}
                           </span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(u.status)}`}>
+                          <span className={`${getStatusBadge(u.status)}`}>
                             {u.status}
                           </span>
                         </div>
@@ -630,7 +601,7 @@ export default function AuthPage() {
                     <div className="text-right">
                       <button
                         onClick={() => setSelectedUserId(selectedUserId === u.id ? null : u.id)}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                        className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                       >
                         {selectedUserId === u.id ? 'Hide' : 'Manage'} Permissions
                       </button>
@@ -639,8 +610,8 @@ export default function AuthPage() {
 
                   {/* Permissions Section */}
                   {selectedUserId === u.id && (
-                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                      <h5 className="font-medium text-gray-900 dark:text-white mb-4">Access Permissions</h5>
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                      <h5 className="ff-heading-medium mb-4">Access Permissions</h5>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(PERMISSIONS).map(([key, perm]) => {
                           const isChecked = userPermissions[u.id]?.includes(key) || false;
@@ -658,18 +629,18 @@ export default function AuthPage() {
                                   }
                                   setUserPermissions(newPerms);
                                 }}
-                                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                className="mt-1 h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
                               />
                               <div>
-                                <p className="font-medium text-sm text-gray-900 dark:text-white">{perm.label}</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">{perm.description}</p>
+                                <p className="ff-body-text font-medium">{perm.label}</p>
+                                <p className="ff-muted-text text-xs">{perm.description}</p>
                               </div>
                             </label>
                           );
                         })}
                       </div>
                       <div className="mt-4 flex justify-end">
-                        <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                        <button className="ff-button-primary">
                           Save Permissions
                         </button>
                       </div>
@@ -682,8 +653,8 @@ export default function AuthPage() {
             {/* Add User Modal */}
             {showAddUser && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Add New User</h3>
+                <div className="bg-white rounded-lg max-w-md w-full p-8">
+                  <h3 className="ff-card-title mb-6">Add New User</h3>
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
@@ -707,35 +678,29 @@ export default function AuthPage() {
                   }}>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Full Name *
-                        </label>
+                        <label className="ff-label">Full Name *</label>
                         <input
                           name="name"
                           type="text"
                           required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Email *
-                        </label>
+                        <label className="ff-label">Email *</label>
                         <input
                           name="email"
                           type="email"
                           required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Role *
-                        </label>
+                        <label className="ff-label">Role *</label>
                         <select
                           name="role"
                           required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input"
                         >
                           {ROLES.map(role => (
                             <option key={role.value} value={role.value}>{role.label}</option>
@@ -743,13 +708,11 @@ export default function AuthPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Department *
-                        </label>
+                        <label className="ff-label">Department *</label>
                         <select
                           name="department"
                           required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input"
                         >
                           {DEPARTMENTS.map(dept => (
                             <option key={dept} value={dept}>{dept}</option>
@@ -757,13 +720,11 @@ export default function AuthPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Location *
-                        </label>
+                        <label className="ff-label">Location *</label>
                         <select
                           name="location"
                           required
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input"
                         >
                           {LOCATIONS.map(loc => (
                             <option key={loc} value={loc}>{loc}</option>
@@ -771,13 +732,11 @@ export default function AuthPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Phone
-                        </label>
+                        <label className="ff-label">Phone</label>
                         <input
                           name="phone"
                           type="tel"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="ff-input"
                         />
                       </div>
                     </div>
@@ -785,13 +744,13 @@ export default function AuthPage() {
                       <button
                         type="button"
                         onClick={() => setShowAddUser(false)}
-                        className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        className="ff-button-primary"
                       >
                         Add User
                       </button>

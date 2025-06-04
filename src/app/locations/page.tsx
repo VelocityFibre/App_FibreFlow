@@ -82,8 +82,10 @@ export default function LocationsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">Locations</h2>
+    <div className="ff-page-container">
+      <div className="ff-page-header">
+        <h2 className="ff-page-title">Locations</h2>
+      </div>
       
       {/* Add new location form */}
       <div className="mb-8 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">

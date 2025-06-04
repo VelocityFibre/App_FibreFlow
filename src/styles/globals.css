@@ -164,7 +164,14 @@ body {
 
 /* Page Layout */
 .ff-page-container {
-  @apply space-y-12;
+  @apply space-y-12 w-full px-6 py-8 max-w-none;
+}
+
+/* For very wide screens, add some max-width but keep it generous */
+@media (min-width: 1920px) {
+  .ff-page-container {
+    @apply px-12;
+  }
 }
 
 .ff-page-header {
