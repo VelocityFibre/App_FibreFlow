@@ -233,3 +233,47 @@ export function useSteps(phaseId?: string) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
+// Hook to update task status
+export function useUpdateTaskStatus() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (taskData: { 
+      id: string;
+      status: 'pending' | 'in_progress' | 'blocked' | 'complete' | 'cancelled';
+    }) => {
+      console.log('Updating task:', taskData);
+      
+      const response = await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData),
+      });
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
+        
+        throw new Error(errorData.error || errorData.details || 'Failed to update task status');
+      }
+      
+      const result = await response.json();
+      console.log('Success response:', result);
+      return result;
+    },
+    onSuccess: () => {
+      // Invalidate project hierarchy queries to refetch
+      queryClient.invalidateQueries({ queryKey: ['project-hierarchy'] });
+    },
+  });
+}

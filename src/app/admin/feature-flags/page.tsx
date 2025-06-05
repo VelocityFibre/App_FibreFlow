@@ -5,20 +5,10 @@ import { FeatureFlag, getAllFeatureFlags, enableFeature, disableFeature, isFeatu
 
 export default function FeatureFlagsPage() {
   const [flags, setFlags] = useState<Record<FeatureFlag, boolean>>({} as Record<FeatureFlag, boolean>);
-  const [performanceMetrics, setPerformanceMetrics] = useState<{[key: string]: number}>({});
   
   // Load current feature flags on mount
   useEffect(() => {
     setFlags(getAllFeatureFlags());
-    
-    // Mock performance metrics for demonstration
-    setPerformanceMetrics({
-      'Dashboard Load Time': 450,
-      'Projects Query Time': 120,
-      'Tasks Query Time': 95,
-      'Memory Usage (MB)': 45.2,
-      'API Response Time': 85,
-    });
   }, []);
   
   // Toggle a feature flag
@@ -57,28 +47,6 @@ export default function FeatureFlagsPage() {
         </div>
       </section>
 
-      {isFeatureEnabled(FeatureFlag.PERFORMANCE_MONITORING) && (
-        <section className="mb-20">
-          <h2 className="text-3xl font-light text-gray-900 mb-12">Performance Metrics</h2>
-          <div className="bg-white border border-gray-100 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300">
-            <h3 className="text-xl font-medium text-gray-900 mb-6">📊 Current Metrics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {Object.entries(performanceMetrics).map(([metric, value]) => (
-                <div key={metric} className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-3xl font-light text-gray-700 mb-2">
-                    {typeof value === 'number' ? (metric.includes('MB') ? value.toFixed(1) : Math.round(value)) : value}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {metric.replace(' (MB)', '')}
-                    {metric.includes('Time') && !metric.includes('MB') && <span className="text-xs ml-1">ms</span>}
-                    {metric.includes('MB') && <span className="text-xs ml-1">MB</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
       
       <section className="mb-20">
         <h2 className="text-3xl font-light text-gray-900 mb-12">Feature Controls</h2>

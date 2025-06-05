@@ -380,33 +380,6 @@ export default function PhasesTasksAdmin() {
         <p className="ff-page-subtitle">Manage project phases and tasks for your workflow</p>
       </div>
 
-      {/* Quick Setup Section */}
-      <section className="ff-section">
-        <h2 className="ff-section-title">Quick Setup</h2>
-        <div className="ff-card">
-          <div className="flex flex-col md:flex-row gap-4">
-            <button
-              onClick={setupDefaultPhases}
-              disabled={setupLoading}
-              className="ff-button-primary disabled:opacity-50"
-            >
-              {setupLoading ? "Setting up..." : "Create Default Phases & Tasks"}
-            </button>
-            <button
-              onClick={createPhaseOneSequentialTasks}
-              disabled={setupLoading}
-              className="ff-button-primary disabled:opacity-50"
-            >
-              {setupLoading ? "Creating..." : "Add Phase 1 Sequential Tasks"}
-            </button>
-          </div>
-          {setupResult && (
-            <div className={`mt-4 p-4 rounded-lg ${setupResult.includes('Error') ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-green-50 text-green-800 border border-green-200'}`}>
-              {setupResult}
-            </div>
-          )}
-        </div>
-      </section>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Phases Management */}

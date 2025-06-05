@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PlusIcon, MagnifyingGlassIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 interface Material {
@@ -16,6 +16,8 @@ interface Material {
   location: string;
   lastUpdated: string;
   status: 'in_stock' | 'low_stock' | 'out_of_stock';
+  projectId?: string;
+  projectName?: string;
 }
 
 const DEMO_MATERIALS: Material[] = [
@@ -32,7 +34,9 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "FiberTech Solutions",
     location: "Warehouse A-1",
     lastUpdated: "2024-01-15",
-    status: "in_stock"
+    status: "in_stock",
+    projectId: "1",
+    projectName: "Downtown Fiber Installation"
   },
   {
     id: "2",
@@ -47,7 +51,9 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "FiberTech Solutions",
     location: "Warehouse A-1",
     lastUpdated: "2024-01-14",
-    status: "low_stock"
+    status: "low_stock",
+    projectId: "2",
+    projectName: "Business Park Network"
   },
   {
     id: "3",
@@ -62,7 +68,9 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "ConnectPro Ltd",
     location: "Warehouse B-2",
     lastUpdated: "2024-01-13",
-    status: "out_of_stock"
+    status: "out_of_stock",
+    projectId: "1",
+    projectName: "Downtown Fiber Installation"
   },
   {
     id: "4",
@@ -77,7 +85,9 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "ConnectPro Ltd",
     location: "Warehouse B-2",
     lastUpdated: "2024-01-12",
-    status: "in_stock"
+    status: "in_stock",
+    projectId: "3",
+    projectName: "Residential Area Expansion"
   },
   {
     id: "5",
@@ -92,7 +102,9 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "SpliceMaster Inc",
     location: "Warehouse C-1",
     lastUpdated: "2024-01-11",
-    status: "low_stock"
+    status: "low_stock",
+    projectId: "2",
+    projectName: "Business Park Network"
   },
   {
     id: "6",
@@ -122,7 +134,9 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "TestEquip Solutions",
     location: "Tool Storage",
     lastUpdated: "2024-01-09",
-    status: "low_stock"
+    status: "low_stock",
+    projectId: "5",
+    projectName: "Industrial Zone Connection"
   },
   {
     id: "8",
@@ -137,13 +151,16 @@ const DEMO_MATERIALS: Material[] = [
     supplier: "NetworkHardware Co",
     location: "Warehouse D-1",
     lastUpdated: "2024-01-08",
-    status: "in_stock"
+    status: "in_stock",
+    projectId: "4",
+    projectName: "City Center Upgrade"
   }
 ];
 
 const CATEGORIES = ["All", "Cables", "Connectors", "Splicing", "Tools", "Hardware"];
 const SUPPLIERS = ["All", "FiberTech Solutions", "ConnectPro Ltd", "SpliceMaster Inc", "TestEquip Solutions", "NetworkHardware Co"];
 const STATUS_FILTERS = ["All", "In Stock", "Low Stock", "Out of Stock"];
+const PROJECTS = ["All", "Downtown Fiber Installation", "Business Park Network", "Residential Area Expansion", "City Center Upgrade", "Industrial Zone Connection", "Unassigned"];
 
 export default function MaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>(DEMO_MATERIALS);
@@ -151,9 +168,11 @@ export default function MaterialsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedSupplier, setSelectedSupplier] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedProject, setSelectedProject] = useState("All");
   const [sortBy, setSortBy] = useState<keyof Material>("itemNo");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
 
   const filteredAndSortedMaterials = useMemo(() => {
     const filtered = materials.filter(material => {
@@ -169,7 +188,11 @@ export default function MaterialsPage() {
       else if (selectedStatus === "Low Stock") matchesStatus = material.status === "low_stock";
       else if (selectedStatus === "Out of Stock") matchesStatus = material.status === "out_of_stock";
       
-      return matchesSearch && matchesCategory && matchesSupplier && matchesStatus;
+      let matchesProject = true;
+      if (selectedProject === "Unassigned") matchesProject = !material.projectName;
+      else if (selectedProject !== "All") matchesProject = material.projectName === selectedProject;
+      
+      return matchesSearch && matchesCategory && matchesSupplier && matchesStatus && matchesProject;
     });
 
     return filtered.sort((a, b) => {
@@ -189,7 +212,7 @@ export default function MaterialsPage() {
         return aStr > bStr ? -1 : aStr < bStr ? 1 : 0;
       }
     });
-  }, [materials, searchTerm, selectedCategory, selectedSupplier, selectedStatus, sortBy, sortOrder]);
+  }, [materials, searchTerm, selectedCategory, selectedSupplier, selectedStatus, selectedProject, sortBy, sortOrder]);
 
   const handleSort = (field: keyof Material) => {
     if (sortBy === field) {
@@ -268,6 +291,18 @@ export default function MaterialsPage() {
     return { total, inStock, lowStock, outOfStock };
   }, [materials]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showProjectDropdown && !(event.target as Element).closest('.project-selector')) {
+        setShowProjectDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProjectDropdown]);
+
   return (
     <div className="ff-page-container">
       <div className="ff-page-header">
@@ -280,6 +315,99 @@ export default function MaterialsPage() {
           Add Material
         </button>
       </div>
+
+      {/* Project Selection Section */}
+      <section className="ff-section">
+        <div className="relative project-selector">
+          <label className="ff-label mb-4 block">Filter by Project</label>
+          <div className="relative max-w-full">
+            <button
+              onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+              className="w-full ff-card text-left flex items-center justify-between p-8 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-center gap-6">
+                <div className={`w-4 h-4 rounded-full ${
+                  selectedProject === "All" ? 'bg-gray-500' :
+                  selectedProject === "Downtown Fiber Installation" ? 'bg-green-500' :
+                  selectedProject === "Business Park Network" ? 'bg-blue-500' :
+                  selectedProject === "Residential Area Expansion" ? 'bg-yellow-500' :
+                  selectedProject === "Unassigned" ? 'bg-red-500' : 'bg-purple-500'
+                }`}></div>
+                <div className="flex-1">
+                  <div className="text-2xl font-light text-foreground mb-2">
+                    {selectedProject === "All" ? "All Projects" : selectedProject}
+                  </div>
+                  <div className="text-muted-foreground flex items-center gap-4 text-lg">
+                    <span className={`inline-flex px-3 py-1 text-sm rounded-full font-medium ${
+                      selectedProject === "All" ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {selectedProject === "All" ? "All Materials" : "Project Filter"}
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="font-medium">{filteredAndSortedMaterials.length} material{filteredAndSortedMaterials.length !== 1 ? 's' : ''}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span>Inventory Management</span>
+                  </div>
+                </div>
+              </div>
+              <div className={`transition-transform duration-200 ${showProjectDropdown ? 'rotate-180' : ''}`}>
+                <svg className="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showProjectDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-3 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+                {PROJECTS.map((project) => (
+                  <button
+                    key={project}
+                    onClick={() => {
+                      setSelectedProject(project);
+                      setShowProjectDropdown(false);
+                    }}
+                    className={`w-full text-left p-8 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0 ${
+                      project === selectedProject ? 'bg-muted/30' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-6">
+                      <div className={`w-4 h-4 rounded-full ${
+                        project === "All" ? 'bg-gray-500' :
+                        project === "Downtown Fiber Installation" ? 'bg-green-500' :
+                        project === "Business Park Network" ? 'bg-blue-500' :
+                        project === "Residential Area Expansion" ? 'bg-yellow-500' :
+                        project === "Unassigned" ? 'bg-red-500' : 'bg-purple-500'
+                      }`}></div>
+                      <div className="flex-1">
+                        <div className="text-xl font-light text-foreground mb-2">
+                          {project === "All" ? "All Projects" : project}
+                        </div>
+                        <div className="text-muted-foreground flex items-center gap-4">
+                          <span className="inline-flex px-3 py-1 text-sm rounded-full font-medium bg-blue-100 text-blue-800">
+                            Materials Filter
+                          </span>
+                          <span>•</span>
+                          <span>Inventory View</span>
+                          <span>•</span>
+                          <span>Stock Management</span>
+                        </div>
+                      </div>
+                      {project === selectedProject && (
+                        <div className="text-primary">
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Stock Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -305,7 +433,7 @@ export default function MaterialsPage() {
       <section className="ff-section">
         <h2 className="ff-section-title">Search & Filters</h2>
         <div className="ff-card">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Search */}
           <div className="relative">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -351,6 +479,17 @@ export default function MaterialsPage() {
             ))}
           </select>
 
+          {/* Project Filter */}
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="ff-input"
+          >
+            {PROJECTS.map(project => (
+              <option key={project} value={project}>{project}</option>
+            ))}
+          </select>
+
           {/* Clear Filters */}
           <button
             onClick={() => {
@@ -358,6 +497,7 @@ export default function MaterialsPage() {
               setSelectedCategory("All");
               setSelectedSupplier("All");
               setSelectedStatus("All");
+              setSelectedProject("All");
             }}
             className="ff-button-secondary"
           >
@@ -406,6 +546,12 @@ export default function MaterialsPage() {
                   className="ff-table-header-cell cursor-pointer"
                 >
                   Supplier {sortBy === 'supplier' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th 
+                  onClick={() => handleSort('projectName')}
+                  className="ff-table-header-cell cursor-pointer"
+                >
+                  Project {sortBy === 'projectName' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   onClick={() => handleSort('status')}
@@ -544,6 +690,17 @@ export default function MaterialsPage() {
                         <div className="font-medium">{material.supplier}</div>
                         <div className="ff-secondary-text text-xs">{material.location}</div>
                       </div>
+                    )}
+                  </td>
+                  <td className="ff-table-cell">
+                    {material.projectName ? (
+                      <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                        {material.projectName}
+                      </span>
+                    ) : (
+                      <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500">
+                        Unassigned
+                      </span>
                     )}
                   </td>
                   <td className="ff-table-cell">
