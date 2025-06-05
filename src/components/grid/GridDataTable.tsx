@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import { ModuleRegistry, AllCommunityModule, themeQuartz } from "ag-grid-community";
 
 // Register AG Grid Community Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -92,7 +92,6 @@ export default function GridDataTable() {
         Tip: You can edit data inline by double-clicking any cell (except the ID column). Scroll horizontally to view more columns.
       </div>
       <div
-        className="ag-theme-balham"
         style={{ width: "100%", minWidth: 1200, height: 700, overflowX: "auto" }}
       >
         {loading ? (
@@ -106,6 +105,7 @@ export default function GridDataTable() {
             domLayout="normal"
             rowSelection="multiple"
             onCellValueChanged={onCellValueChanged}
+            theme={themeQuartz}
           />
         )}
       </div>

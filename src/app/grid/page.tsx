@@ -1,14 +1,12 @@
 "use client";
 import { useState, useCallback, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import { ModuleRegistry, AllCommunityModule, themeQuartz } from "ag-grid-community";
 
 // Register AG Grid Community Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Import AG Grid CSS
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
+// Using AG Grid v33 Theming API - no CSS imports needed
 
 interface TableConfig {
   name: string;
@@ -230,7 +228,6 @@ export default function GridPage() {
       {/* Grid */}
       <div className="ff-table-container">
         <div
-          className="ag-theme-quartz"
           style={{ width: "100%", height: 600 }}
         >
           <AgGridReact
@@ -239,6 +236,7 @@ export default function GridPage() {
             columnDefs={selectedTable.columns}
             defaultColDef={defaultColDef}
             quickFilterText={quickFilter}
+            theme={themeQuartz}
             {...gridOptions}
           />
         </div>

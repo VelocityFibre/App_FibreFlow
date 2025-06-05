@@ -151,17 +151,50 @@ Edit `src/components/ThemeSwitcher.tsx`:
 
 ### **Page Structure:**
 ```tsx
-<div className="space-y-12">        {/* Page container */}
-  <div className="border-b border-gray-100 pb-8 mb-12">  {/* Page header */}
-    <h1 className="text-5xl font-light text-gray-900 mb-4">Title</h1>
-    <p className="text-xl text-gray-600 font-light">Subtitle</p>
+<div className="ff-page-container">
+  {/* Clean Header Section */}
+  <div className="ff-page-header">
+    <h1 className="ff-page-title">Page Title</h1>
+    <p className="ff-page-subtitle">Clear description of page purpose</p>
   </div>
-  <section className="mb-20">       {/* Content sections */}
-    <h2 className="text-3xl font-light text-gray-900 mb-12">Section</h2>
+
+  {/* Selection/Filter Section (when needed) */}
+  <section className="ff-section">
+    <div className="relative">
+      <label className="ff-label mb-4 block">Selection Label</label>
+      <div className="relative max-w-full">
+        <button className="w-full ff-card text-left flex items-center justify-between p-8 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-6">
+            <div className="w-4 h-4 rounded-full bg-status-color"></div>
+            <div className="flex-1">
+              <div className="text-2xl font-light text-foreground mb-2">Selection Title</div>
+              <div className="text-muted-foreground flex items-center gap-4 text-lg">
+                {/* Status info */}
+              </div>
+            </div>
+          </div>
+          <ChevronIcon />
+        </button>
+      </div>
+    </div>
+  </section>
+
+  {/* Content Sections */}
+  <section className="ff-section">
+    <h2 className="ff-section-title">Content Section</h2>
     {/* Content */}
   </section>
 </div>
 ```
+
+### **Selection Section Pattern:**
+The selection section should always:
+1. **Be a separate section** below the header with `ff-section` spacing
+2. **Span full width** for visual balance
+3. **Use large, light typography** (`text-2xl font-light`)
+4. **Include status indicators** with proper color coding
+5. **Have generous padding** (`p-8`) for Apple-inspired feel
+6. **Show smooth transitions** for interactions
 
 ### **Card Structure:**
 ```tsx
@@ -174,6 +207,68 @@ Edit `src/components/ThemeSwitcher.tsx`:
 </div>
 ```
 
+## 📊 AG Grid Theme Integration
+
+### **AG Grid v33 Theming:**
+AG Grid themes are **separate from FibreFlow themes** but work together:
+
+- **FibreFlow themes**: Control overall app appearance (backgrounds, typography, buttons)
+- **AG Grid themes**: Control data grid appearance (cells, headers, borders)
+
+### **Configuration:**
+```tsx
+// Correct (v33+ Theming API):
+<AgGridReact theme="quartz" />
+
+// Incorrect (causes conflict):
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
+```
+
+### **Available AG Grid Themes:**
+- **quartz**: (Recommended) Clean, modern look that complements our light theme
+- **balham**: Traditional spreadsheet style
+- **alpine**: Compact theme with good data density
+- **material**: Google Material Design style
+
+### **Integration Guidelines:**
+1. **Always use the theme prop**, never import CSS files
+2. **"quartz" theme** works best with our Apple-inspired design
+3. **No className needed** on wrapper div (no `ag-theme-quartz` class)
+4. **Theme is self-contained** - doesn't conflict with FibreFlow themes
+
+## 🎯 **Selection Section Implementation Guide**
+
+### **How to Request This Pattern:**
+When asking Claude Code to implement selection sections, use this prompt structure:
+
+```
+Please implement the FibreFlow selection section pattern on [page_name]:
+
+1. Move the [selector_type] below the header as a separate ff-section
+2. Use the full-width card layout with p-8 padding
+3. Include status indicators with proper color coding
+4. Apply text-2xl font-light typography for the main title
+5. Add hover effects and smooth transitions
+6. Follow the established spacing and theme guidelines
+
+The selection should show: [specific_content_requirements]
+```
+
+### **Example Implementation Request:**
+```
+Please implement the FibreFlow selection section pattern on the my-tasks page:
+
+1. Move the user selector below the header as a separate ff-section  
+2. Use the full-width card layout with p-8 padding
+3. Include user avatar/status with proper color coding
+4. Apply text-2xl font-light typography for "Hein van Vuuren (You)"
+5. Add hover effects and smooth transitions
+6. Follow the established spacing and theme guidelines
+
+The selection should show: User name, role, task count, and filter options
+```
+
 ## 🚫 Theme Anti-Patterns
 
 ### **Don't:**
@@ -182,6 +277,10 @@ Edit `src/components/ThemeSwitcher.tsx`:
 - Create themes without testing on theme-test page
 - Use inconsistent spacing between themes
 - Ignore accessibility contrast requirements
+- Import AG Grid CSS files when using v33+
+- **Put selectors in the header section**
+- **Use small padding (less than p-6) on selection cards**
+- **Mix different typography weights in selection sections**
 
 ### **Do:**
 - Use CSS custom properties consistently
@@ -189,6 +288,10 @@ Edit `src/components/ThemeSwitcher.tsx`:
 - Follow the established spacing system
 - Maintain consistent typography scales
 - Ensure good contrast ratios
+- Use AG Grid's theme prop for data grids
+- **Separate selection sections from headers**
+- **Use generous padding (p-8) for premium feel**
+- **Apply consistent light typography (font-light)**
 
 ## 📱 Responsive Considerations
 
